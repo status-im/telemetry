@@ -43,6 +43,8 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	defer r.Body.Close()
 
 	if err := receivedMessage.put(s.DB); err != nil {
+		log.Println(err)
+
 		err := respondWithError(w, http.StatusInternalServerError, err.Error())
 		if err != nil {
 			log.Println(err)
