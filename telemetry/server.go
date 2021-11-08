@@ -23,8 +23,14 @@ func NewServer(db *sql.DB) *Server {
 	}
 
 	server.Router.HandleFunc("/received-messages", server.createReceivedMessages).Methods("POST")
+	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
 
 	return server
+}
+
+func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "OK")
 }
 
 func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) {
