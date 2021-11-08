@@ -20,6 +20,3 @@ lint:
 
 test:
 	go test -v -failfast ./...
-
-build: 
-	go build -o ./build/server ./cmd/server/main.go
