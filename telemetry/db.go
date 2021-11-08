@@ -31,10 +31,15 @@ func createTables(db *sql.DB) error {
 		id SERIAL PRIMARY KEY,
 		chatId VARCHAR(255) NOT NULL,
 		messageHash VARCHAR(255) NOT NULL,
+		messageId VARCHAR(255) NOT NULL,
 		receiverKeyUID VARCHAR(255) NOT NULL,
+		nodeName VARCHAR(255) NOT NULL,
 		sentAt INTEGER NOT NULL,
 		topic VARCHAR(255) NOT NULL,
-		createdAt INTEGER NOT NULL
+		createdAt INTEGER NOT NULL,
+
+		constraint receivedMessages_unique unique(chatId, messageHash, receiverKeyUID, nodeName)
+
 	);`
 	_, err := db.Exec(sqlStmt)
 
