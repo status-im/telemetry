@@ -23,4 +23,3 @@ test:
 
 build: 
 	go build -o ./build/server ./cmd/server/main.go
-	go build -o ./build/aggregator ./cmd/aggregator/main.go

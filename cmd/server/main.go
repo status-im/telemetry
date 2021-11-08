@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
+	"time"
 
 	"github.com/status-im/dev-telemetry/telemetry"
+
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -14,6 +17,14 @@ func main() {
 
 	db := telemetry.OpenDb(*dataSourceName)
 	defer db.Close()
+
+	aggregator := telemetry.NewAggregator(db)
+	c := cron.New()
+	c.AddFunc("* * * * *", func() {
+		aggregator.Run(time.Hour)
+	})
+	c.Start()
+	defer c.Stop()
 
 	server := telemetry.NewServer(db)
 	server.Start(*port)
