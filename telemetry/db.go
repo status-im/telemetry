@@ -4,12 +4,11 @@ import (
 	"database/sql"
 	"log"
 
-	// TODO Replace with real db driver
-	_ "github.com/mattn/go-sqlite3" // Blank import to register the sqlite3 driver
+	_ "github.com/lib/pq"
 )
 
-func OpenDb(username string, password string, name string) *sql.DB {
-	db, err := sql.Open("sqlite3", ":memory:")
+func OpenDb(dataSourceName string) *sql.DB {
+	db, err := sql.Open("postgres", dataSourceName)
 	if err != nil {
 		log.Fatalf("could not connect to database: %v", err)
 	}
@@ -38,8 +37,20 @@ func createTables(db *sql.DB) error {
 		createdAt INTEGER NOT NULL
 	);`
 	_, err := db.Exec(sqlStmt)
+
 	if err != nil {
 		return err
 	}
-	return nil
+
+	sqlStmt = `CREATE TABLE IF NOT EXISTS receivedMessageAggregated (
+		id INTEGER PRIMARY KEY,
+		durationInSeconds INTEGER NOT NULL,
+		chatId VARCHAR(255) NOT NULL,
+		value DECIMAL NOT NULL,
+		runAt INTEGER NOT NULL
+	);`
+
+	_, err = db.Exec(sqlStmt)
+
+	return err
 }

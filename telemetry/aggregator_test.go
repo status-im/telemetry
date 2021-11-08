@@ -1,0 +1,149 @@
+package telemetry
+
+import (
+	"database/sql"
+	"log"
+	"math"
+	"testing"
+	"time"
+
+	_ "github.com/mattn/go-sqlite3" // Blank import to register the sqlite3 driver
+	"github.com/stretchr/testify/require"
+)
+
+func NewMock() *sql.DB {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	err = createTables(db)
+
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when migrating the db", err)
+	}
+
+	return db
+}
+
+func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
+	rows, err := db.Query("SELECT * FROM receivedMessageAggregated")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var receivedMessageAggregateds []*ReceivedMessageAggregated
+	for rows.Next() {
+		var receivedMessageAggregated ReceivedMessageAggregated
+		err = rows.Scan(
+			&receivedMessageAggregated.ID,
+			&receivedMessageAggregated.DurationInSeconds,
+			&receivedMessageAggregated.ChatID,
+			&receivedMessageAggregated.Value,
+			&receivedMessageAggregated.RunAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		receivedMessageAggregateds = append(receivedMessageAggregateds, &receivedMessageAggregated)
+	}
+	return receivedMessageAggregateds, nil
+}
+
+func TestRunAggregatorSimple(t *testing.T) {
+	db := NewMock()
+
+	m := &ReceivedMessage{
+		ChatID:         "1",
+		MessageHash:    "1",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	oneHourAndHalf := time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "2",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	agg := NewAggregator(db)
+
+	agg.Run(time.Hour)
+
+	res, err := queryAggregatedMessage(db)
+	require.NoError(t, err)
+	require.Len(t, res, 2)
+	require.Equal(t, "3", res[0].ChatID)
+	require.Equal(t, 1.0, res[0].Value)
+	require.Equal(t, "", res[1].ChatID)
+	require.Equal(t, 1.0, res[1].Value)
+}
+
+func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
+	db := NewMock()
+
+	m := &ReceivedMessage{
+		ChatID:         "1",
+		MessageHash:    "1",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	oneHourAndHalf := time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "2",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "3",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	m = &ReceivedMessage{
+		ChatID:         "1",
+		MessageHash:    "1",
+		ReceiverKeyUID: "2",
+		SentAt:         time.Now().Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "2",
+		ReceiverKeyUID: "2",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	m.put(db)
+
+	agg := NewAggregator(db)
+
+	agg.Run(time.Hour)
+
+	res, err := queryAggregatedMessage(db)
+	require.NoError(t, err)
+	require.Len(t, res, 2)
+	require.Equal(t, "3", res[0].ChatID)
+	require.Equal(t, 0.67, math.Round(res[0].Value*100)/100)
+	require.Equal(t, "", res[1].ChatID)
+	require.Equal(t, 0.67, math.Round(res[1].Value*100)/100)
+}

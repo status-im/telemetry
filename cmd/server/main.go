@@ -8,17 +8,11 @@ import (
 
 func main() {
 	port := flag.Int("port", 8080, "Port number")
-	dbUsername := flag.String("db-username", "", "Db username")
-	dbPassword := flag.String("db-password", "", "Db password")
-	dbName := flag.String("db-name", "", "Db name")
+	dataSourceName := flag.String("data-source-name", "", "DB URL")
 
 	flag.Parse()
 
-	db := telemetry.OpenDb(
-		*dbUsername,
-		*dbPassword,
-		*dbName,
-	)
+	db := telemetry.OpenDb(*dataSourceName)
 	defer db.Close()
 
 	server := telemetry.NewServer(db)
