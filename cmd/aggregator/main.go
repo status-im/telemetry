@@ -17,5 +17,5 @@ func main() {
 	defer db.Close()
 
 	aggregator := telemetry.NewAggregator(db)
-	aggregator.Run(time.Duration(*seconds))
+	aggregator.Run(time.Duration(*seconds) * time.Second)
 }

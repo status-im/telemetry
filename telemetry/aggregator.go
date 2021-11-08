@@ -17,6 +17,7 @@ func NewAggregator(db *sql.DB) *Aggregator {
 }
 
 func (a *Aggregator) Run(d time.Duration) {
+	log.Printf("started aggregator for %s\n", d)
 	// Define the duration starts and end.
 	// Allow a buffer of the duration to define the start and end.
 	// This is to ensure we wait for people not being connected or if they received messages with delay
@@ -63,6 +64,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	}
 
 	if len(groupedMessages) == 0 {
+		log.Println("no record found, finishing early")
 		return
 	}
 
@@ -103,6 +105,7 @@ func (a *Aggregator) Run(d time.Duration) {
 			log.Fatalf("could not store received message aggregated: %s", err)
 		}
 	}
+	log.Printf("stored %d chat id records", len(rChatID))
 
 	// Calculate the global reliability R = (R(0) + R(1)+ .... + R(n)) / len(Rch)
 	rChatIDTotal := 0.0
@@ -121,4 +124,5 @@ func (a *Aggregator) Run(d time.Duration) {
 	if err != nil {
 		log.Fatalf("could not store received message aggregated: %s", err)
 	}
+	log.Printf("finished aggregator for %s\n", d)
 }
