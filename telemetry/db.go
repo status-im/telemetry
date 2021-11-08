@@ -28,7 +28,7 @@ func OpenDb(dataSourceName string) *sql.DB {
 
 func createTables(db *sql.DB) error {
 	sqlStmt := `CREATE TABLE IF NOT EXISTS receivedMessages (
-		id INTEGER PRIMARY KEY,
+		id SERIAL PRIMARY KEY,
 		chatId VARCHAR(255) NOT NULL,
 		messageHash VARCHAR(255) NOT NULL,
 		receiverKeyUID VARCHAR(255) NOT NULL,
@@ -43,7 +43,7 @@ func createTables(db *sql.DB) error {
 	}
 
 	sqlStmt = `CREATE TABLE IF NOT EXISTS receivedMessageAggregated (
-		id INTEGER PRIMARY KEY,
+		id SERIAL PRIMARY KEY,
 		durationInSeconds INTEGER NOT NULL,
 		chatId VARCHAR(255) NOT NULL,
 		value DECIMAL NOT NULL,

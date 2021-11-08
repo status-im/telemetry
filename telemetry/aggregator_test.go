@@ -12,7 +12,7 @@ import (
 )
 
 func NewMock() *sql.DB {
-	db, err := sql.Open("sqlite3", ":memory:")
+	db, err := sql.Open("postgres", "postgres://telemetry:newPassword@127.0.0.1:5432/telemetry_test")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
@@ -24,6 +24,20 @@ func NewMock() *sql.DB {
 	}
 
 	return db
+}
+
+func dropTables(db *sql.DB) {
+	_, err := db.Exec("DROP TABLE IF EXISTS receivedMessages")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	db.Close()
 }
 
 func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
@@ -53,6 +67,7 @@ func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
 
 func TestRunAggregatorSimple(t *testing.T) {
 	db := NewMock()
+	defer dropTables(db)
 
 	m := &ReceivedMessage{
 		ChatID:         "1",
@@ -61,7 +76,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err := m.put(db)
+	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
 	m = &ReceivedMessage{
@@ -71,7 +87,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err = m.put(db)
+	require.NoError(t, err)
 
 	agg := NewAggregator(db)
 
@@ -88,6 +105,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 
 func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	db := NewMock()
+	defer dropTables(db)
 
 	m := &ReceivedMessage{
 		ChatID:         "1",
@@ -96,7 +114,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err := m.put(db)
+	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
 	m = &ReceivedMessage{
@@ -106,7 +125,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err = m.put(db)
+	require.NoError(t, err)
 
 	m = &ReceivedMessage{
 		ChatID:         "3",
@@ -115,7 +135,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err = m.put(db)
+	require.NoError(t, err)
 
 	m = &ReceivedMessage{
 		ChatID:         "1",
@@ -124,7 +145,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err = m.put(db)
+	require.NoError(t, err)
 
 	m = &ReceivedMessage{
 		ChatID:         "3",
@@ -133,7 +155,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m.put(db)
+	err = m.put(db)
+	require.NoError(t, err)
 
 	agg := NewAggregator(db)
 

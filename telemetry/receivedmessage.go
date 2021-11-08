@@ -53,40 +53,34 @@ func didReceivedMessageAfter(db *sql.DB, receiverPublicKey string, after time.Ti
 }
 
 func (r *ReceivedMessage) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, receiverKeyUID, sentAt, topic, createdAt) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, receiverKeyUID, sentAt, topic, createdAt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;")
 	if err != nil {
 		return err
 	}
 
 	r.CreatedAt = time.Now().Unix()
-	res, err := stmt.Exec(r.ChatID, r.MessageHash, r.ReceiverKeyUID, r.SentAt, r.Topic, r.CreatedAt)
+	lastInsertId := 0
+	err = stmt.QueryRow(r.ChatID, r.MessageHash, r.ReceiverKeyUID, r.SentAt, r.Topic, r.CreatedAt).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
-	id, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
+	r.ID = lastInsertId
 
-	r.ID = int(id)
 	return nil
 }
 
 func (r *ReceivedMessageAggregated) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessageAggregated (chatId, durationInSeconds, value, runAt) VALUES (?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO receivedMessageAggregated (chatId, durationInSeconds, value, runAt) VALUES ($1, $2, $3, $4) RETURNING id;")
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(r.ChatID, r.DurationInSeconds, r.Value, r.RunAt)
+	lastInsertId := 0
+	err = stmt.QueryRow(r.ChatID, r.DurationInSeconds, r.Value, r.RunAt).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
-	id, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
+	r.ID = lastInsertId
 
-	r.ID = int(id)
 	return nil
 }
