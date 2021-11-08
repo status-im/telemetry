@@ -20,7 +20,7 @@ func main() {
 
 	aggregator := telemetry.NewAggregator(db)
 	c := cron.New()
-	c.AddFunc("* * * * *", func() {
+	c.AddFunc("0 * * * *", func() {
 		aggregator.Run(time.Hour)
 	})
 	c.Start()
