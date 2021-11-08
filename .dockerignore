@@ -1,0 +1,4 @@
+*.md
+hooks/
+build/
+Dockerfile
