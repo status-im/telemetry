@@ -1,6 +1,8 @@
-# telemetry
+# Telemetry
 
-## Dev setup
+Opt-in message reliability metrics service.
+
+# Development
 
 You need to setup a postgres db as such:
 1) Create a telemetry user with password newPassword
@@ -16,3 +18,9 @@ Finally, to run the test:
 ```
 make test
 ```
+
+# Continuous Integration
+
+Builds of Docker images are created with our [Jenkins CI](https://ci.status.im/job/telemetry/job/docker/) which push a [`statusteam/telemetry`](https://hub.docker.com/r/statusteam/telemetry) Docker image.
+
+The host is managed in [`infra-misc`](https://github.com/status-im/infra-misc/blob/master/ansible/roles/telemetry) repository.
