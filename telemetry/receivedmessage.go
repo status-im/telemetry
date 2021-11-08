@@ -25,7 +25,7 @@ type ReceivedMessage struct {
 }
 
 func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*ReceivedMessage, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
+	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, receiverKeyUID, sentAt, topic, createdAt FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 
 func didReceivedMessageAfter(db *sql.DB, receiverPublicKey string, after time.Time) (bool, error) {
 	var count int
-	err := db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = '%s' AND createdAt > %d", receiverPublicKey, after.Unix())).Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt > $2", receiverPublicKey, after.Unix()).Scan(&count)
 	if err != nil {
 		return false, err
 	}
