@@ -35,9 +35,9 @@ func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	var receivedMessage ReceivedMessage
+	var receivedMessages []ReceivedMessage
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&receivedMessage); err != nil {
+	if err := decoder.Decode(&receivedMessages); err != nil {
 		log.Println(err)
 
 		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -48,16 +48,24 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	}
 	defer r.Body.Close()
 
-	if err := receivedMessage.put(s.DB); err != nil {
-		log.Println(err)
+	var ids []int
+	for _, receivedMessage := range receivedMessages {
+		if err := receivedMessage.put(s.DB); err != nil {
+			log.Println("could not save message", err, receivedMessage)
+			continue
+		}
+		ids = append(ids, receivedMessage.ID)
+	}
 
-		err := respondWithError(w, http.StatusInternalServerError, err.Error())
+	if len(ids) != len(receivedMessages) {
+		err := respondWithError(w, http.StatusInternalServerError, "Could not save all record")
 		if err != nil {
 			log.Println(err)
 		}
 		return
 	}
-	err := respondWithJSON(w, http.StatusCreated, receivedMessage)
+
+	err := respondWithJSON(w, http.StatusCreated, receivedMessages)
 	if err != nil {
 		log.Println(err)
 	}
