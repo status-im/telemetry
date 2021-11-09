@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"time"
 
 	"github.com/status-im/dev-telemetry/telemetry"
@@ -20,9 +21,14 @@ func main() {
 
 	aggregator := telemetry.NewAggregator(db)
 	c := cron.New()
-	c.AddFunc("0 * * * *", func() {
+	_, err := c.AddFunc("0 * * * *", func() {
 		aggregator.Run(time.Hour)
 	})
+
+	if err != nil {
+		log.Fatalf("Error adding cron job: %v", err)
+	}
+
 	c.Start()
 	defer c.Stop()
 
