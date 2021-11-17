@@ -40,6 +40,11 @@ func dropTables(db *sql.DB) {
 	db.Close()
 }
 
+func updateCreatedAt(db *sql.DB, m *ReceivedMessage) error {
+	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.CreatedAt, m.ID)
+	return err
+}
+
 func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
 	rows, err := db.Query("SELECT * FROM receivedMessageAggregated")
 	if err != nil {
@@ -90,6 +95,20 @@ func TestRunAggregatorSimple(t *testing.T) {
 	err = m.put(db)
 	require.NoError(t, err)
 
+	twoHourAndHalf := 5*time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "3",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+	m.CreatedAt = m.SentAt
+	err = updateCreatedAt(db, m)
+	require.NoError(t, err)
+
 	agg := NewAggregator(db)
 
 	agg.Run(time.Hour)
@@ -138,6 +157,20 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	err = m.put(db)
 	require.NoError(t, err)
 
+	twoHourAndHalf := 5*time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "4",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+	m.CreatedAt = m.SentAt
+	err = updateCreatedAt(db, m)
+	require.NoError(t, err)
+
 	m = &ReceivedMessage{
 		ChatID:         "1",
 		MessageHash:    "1",
@@ -156,6 +189,19 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	err = m.put(db)
+	require.NoError(t, err)
+
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "4",
+		ReceiverKeyUID: "2",
+		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
+		Topic:          "1",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+	m.CreatedAt = m.SentAt
+	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
 	agg := NewAggregator(db)

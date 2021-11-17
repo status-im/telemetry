@@ -40,7 +40,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	// Ensure the specific key uids received a message after the end of the duration
 	// That way we know that this specific key uid has been connected
 	for receiverKeyUID := range receiverKeyUIDs {
-		ok, err := didReceivedMessageAfter(a.DB, receiverKeyUID, endsAt)
+		ok, err := didReceivedMessageBeforeAndAfter(a.DB, receiverKeyUID, startsAt, endsAt)
 		if err != nil {
 			log.Fatalf("could not check key UID: %s, because of %s", receiverKeyUID, err)
 		}
