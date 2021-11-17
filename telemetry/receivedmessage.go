@@ -55,13 +55,20 @@ func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 	return receivedMessages, nil
 }
 
-func didReceivedMessageAfter(db *sql.DB, receiverPublicKey string, after time.Time) (bool, error) {
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt > $2", receiverPublicKey, after.Unix()).Scan(&count)
+func didReceivedMessageBeforeAndAfter(db *sql.DB, receiverPublicKey string, before, after time.Time) (bool, error) {
+	var afterCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt > $2", receiverPublicKey, after.Unix()).Scan(&afterCount)
 	if err != nil {
 		return false, err
 	}
-	return count > 0, nil
+
+	var beforeCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt < $2", receiverPublicKey, before.Unix()).Scan(&beforeCount)
+	if err != nil {
+		return false, err
+	}
+
+	return afterCount > 0 && beforeCount > 0, nil
 }
 
 func (r *ReceivedMessage) put(db *sql.DB) error {
