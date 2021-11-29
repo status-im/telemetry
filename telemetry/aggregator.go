@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -31,29 +32,20 @@ func (a *Aggregator) Run(d time.Duration) {
 		log.Fatalf("could not query received message: %s", err)
 	}
 
-	// Collect all key uids
-	receiverKeyUIDs := make(map[string]bool)
-	for _, receivedMessage := range receivedMessages {
-		receiverKeyUIDs[receivedMessage.ReceiverKeyUID] = true
-	}
-
-	// Ensure the specific key uids received a message after the end of the duration
-	// That way we know that this specific key uid has been connected
-	for receiverKeyUID := range receiverKeyUIDs {
-		ok, err := didReceivedMessageBeforeAndAfter(a.DB, receiverKeyUID, startsAt, endsAt)
-		if err != nil {
-			log.Fatalf("could not check key UID: %s, because of %s", receiverKeyUID, err)
-		}
-		if !ok {
-			receiverKeyUIDs[receiverKeyUID] = false
-		}
-	}
-
 	// Group the received messages by chat id and key uid
 	groupedMessages := make(map[string]map[string]int)
 	for _, receivedMessage := range receivedMessages {
-		// Skip receiver key uid if it has not been connected
-		if !receiverKeyUIDs[receivedMessage.ReceiverKeyUID] {
+		// Skip receiver key uid if it has not been connected or was not in the chat after and before
+		ok, err := didReceivedMessageBeforeAndAfterInChat(
+			a.DB, receivedMessage.ReceiverKeyUID,
+			startsAt,
+			endsAt,
+			receivedMessage.ChatID,
+		)
+		if err != nil {
+			log.Fatalf("could not check message id: %s, because of %s", fmt.Sprint(receivedMessage.ID), err)
+		}
+		if !ok {
 			continue
 		}
 
