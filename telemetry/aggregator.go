@@ -32,7 +32,7 @@ func (a *Aggregator) Run(d time.Duration) {
 		log.Fatalf("could not query received message: %s", err)
 	}
 
-	// Group the received messages by chat id and key uid
+	// Group the received messages by fleet/chat id and key uid to make chat id really unique
 	groupedMessages := make(map[string]map[string]int)
 	for _, receivedMessage := range receivedMessages {
 		// Skip receiver key uid if it has not been connected or was not in the chat after and before
@@ -48,11 +48,11 @@ func (a *Aggregator) Run(d time.Duration) {
 		if !ok {
 			continue
 		}
-
-		if _, ok := groupedMessages[receivedMessage.ChatID]; !ok {
-			groupedMessages[receivedMessage.ChatID] = make(map[string]int)
+		key := fmt.Sprintf("%s/%s", receivedMessage.Fleet, receivedMessage.ChatID)
+		if _, ok := groupedMessages[key]; !ok {
+			groupedMessages[key] = make(map[string]int)
 		}
-		groupedMessages[receivedMessage.ChatID][receivedMessage.ReceiverKeyUID] += 1
+		groupedMessages[key][receivedMessage.ReceiverKeyUID] += 1
 	}
 
 	if len(groupedMessages) == 0 {

@@ -56,6 +56,12 @@ func createTables(db *sql.DB) error {
 	);`
 
 	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		return err
+	}
 
-	return err
+	sqlStmt = `ALTER TABLE receivedMessages ADD fleet VARCHAR(255);`
+	_, _ = db.Exec(sqlStmt)
+
+	return nil
 }

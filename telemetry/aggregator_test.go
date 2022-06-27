@@ -80,6 +80,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err := m.put(db)
 	require.NoError(t, err)
@@ -91,6 +92,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -102,6 +104,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -116,7 +119,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 	res, err := queryAggregatedMessage(db)
 	require.NoError(t, err)
 	require.Len(t, res, 2)
-	require.Equal(t, "3", res[0].ChatID)
+	require.Equal(t, "prod/3", res[0].ChatID)
 	require.Equal(t, 1.0, res[0].Value)
 	require.Equal(t, "", res[1].ChatID)
 	require.Equal(t, 1.0, res[1].Value)
@@ -132,6 +135,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err := m.put(db)
 	require.NoError(t, err)
@@ -143,6 +147,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -153,6 +158,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -164,6 +170,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -177,6 +184,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -187,6 +195,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -197,6 +206,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
+		Fleet:          "prod",
 	}
 	err = m.put(db)
 	require.NoError(t, err)
@@ -211,8 +221,74 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	res, err := queryAggregatedMessage(db)
 	require.NoError(t, err)
 	require.Len(t, res, 2)
-	require.Equal(t, "3", res[0].ChatID)
+	require.Equal(t, "prod/3", res[0].ChatID)
 	require.Equal(t, 0.67, math.Round(res[0].Value*100)/100)
 	require.Equal(t, "", res[1].ChatID)
 	require.Equal(t, 0.67, math.Round(res[1].Value*100)/100)
+}
+
+func TestRunAggregatorSimpleWithDifferentFleet(t *testing.T) {
+	db := NewMock()
+	defer dropTables(db)
+
+	m := &ReceivedMessage{
+		ChatID:         "1",
+		MessageHash:    "1",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Unix(),
+		Topic:          "1",
+		Fleet:          "prod",
+	}
+	err := m.put(db)
+	require.NoError(t, err)
+
+	oneHourAndHalf := time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "2",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+		Fleet:          "test",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "5",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
+		Topic:          "1",
+		Fleet:          "prod",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+
+	twoHourAndHalf := 5*time.Hour + time.Minute*30
+	m = &ReceivedMessage{
+		ChatID:         "3",
+		MessageHash:    "3",
+		ReceiverKeyUID: "1",
+		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
+		Topic:          "1",
+		Fleet:          "prod",
+	}
+	err = m.put(db)
+	require.NoError(t, err)
+	m.CreatedAt = m.SentAt
+	err = updateCreatedAt(db, m)
+	require.NoError(t, err)
+
+	agg := NewAggregator(db)
+
+	agg.Run(time.Hour)
+
+	res, err := queryAggregatedMessage(db)
+	require.NoError(t, err)
+	require.Len(t, res, 3)
+	require.Equal(t, "test/3", res[0].ChatID)
+	require.Equal(t, 1.0, res[0].Value)
+	require.Equal(t, "prod/3", res[1].ChatID)
+	require.Equal(t, 1.0, res[1].Value)
 }
