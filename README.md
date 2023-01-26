@@ -21,6 +21,6 @@ make test
 
 # Continuous Integration
 
-Builds of Docker images are created with our [Jenkins CI](https://ci.status.im/job/telemetry/job/docker/) which push a [`statusteam/telemetry`](https://hub.docker.com/r/statusteam/telemetry) Docker image.
+Builds of Docker images are created with our [Jenkins CI](https://ci.infra.status.im/job/telemetry/job/docker/) which push a [`statusteam/telemetry`](https://hub.docker.com/r/statusteam/telemetry) Docker image.
 
 The host is managed in [`infra-misc`](https://github.com/status-im/infra-misc/blob/master/ansible/roles/telemetry) repository.
