@@ -4,8 +4,42 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	_ "github.com/lib/pq"
 )
+
+// Migrate applies migrations.
+func Migrate(db *sql.DB, driver database.Driver) error {
+	return migrateDB(db, bindata.Resource(
+		AssetNames(),
+		Asset,
+	), driver)
+}
+
+// Migrate database using provided resources.
+func migrateDB(db *sql.DB, resources *bindata.AssetSource, driver database.Driver) error {
+	source, err := bindata.WithInstance(resources)
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithInstance(
+		"go-bindata",
+		source,
+		"telemetrydb",
+		driver)
+	if err != nil {
+		return err
+	}
+
+	if err = m.Up(); err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
+}
 
 func OpenDb(dataSourceName string) *sql.DB {
 	db, err := sql.Open("postgres", dataSourceName)
@@ -56,6 +90,16 @@ func createTables(db *sql.DB) error {
 	);`
 
 	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		return err
+	}
 
-	return err
+	dbDriver, err := postgres.WithInstance(db, &postgres.Config{
+		MigrationsTable: postgres.DefaultMigrationsTable,
+	})
+	if err != nil {
+		return err
+	}
+
+	return Migrate(db, dbDriver)
 }

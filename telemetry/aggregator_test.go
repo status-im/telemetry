@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3" // Blank import to register the sqlite3 driver
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,6 +32,11 @@ func dropTables(db *sql.DB) {
 	}
 
 	_, err = db.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS schema_migrations")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
