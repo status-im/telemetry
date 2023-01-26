@@ -20,3 +20,7 @@ lint:
 
 test:
 	go test -v -failfast ./...
+
+generate:
+	go generate ./telemetry/sql
+	
