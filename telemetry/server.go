@@ -22,6 +22,7 @@ func NewServer(db *sql.DB) *Server {
 		DB:     db,
 	}
 
+	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
 	server.Router.HandleFunc("/received-messages", server.createReceivedMessages).Methods("POST")
 	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
 
@@ -66,6 +67,42 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err := respondWithJSON(w, http.StatusCreated, receivedMessages)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
+	)
+}
+
+func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var protocolStats ProtocolStats
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&protocolStats); err != nil {
+		log.Println(err)
+
+		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+	defer r.Body.Close()
+
+	if err := protocolStats.put(s.DB); err != nil {
+		err := respondWithError(w, http.StatusInternalServerError, "Could not save protocol stats")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+
+	err := respondWithJSON(w, http.StatusCreated, map[string]string{"error": ""})
 	if err != nil {
 		log.Println(err)
 	}
