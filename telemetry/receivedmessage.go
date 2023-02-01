@@ -20,6 +20,7 @@ type ReceivedMessage struct {
 	MessageHash    string `json:"messageHash"`
 	MessageID      string `json:"messageId"`
 	MessageType    string `json:"messageType"`
+	MessageSize    int    `json:"messageSize"`
 	ReceiverKeyUID string `json:"receiverKeyUID"`
 	NodeName       string `json:"nodeName"`
 	SentAt         int64  `json:"sentAt"`
@@ -28,7 +29,7 @@ type ReceivedMessage struct {
 }
 
 func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*ReceivedMessage, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, messageId, receiverKeyUID, nodeName, sentAt, topic, messageType, createdAt FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
+	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, messageId, receiverKeyUID, nodeName, sentAt, topic, messageType, messageSize, createdAt FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +48,7 @@ func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 			&receivedMessage.SentAt,
 			&receivedMessage.Topic,
 			&receivedMessage.MessageType,
+			&receivedMessage.MessageSize,
 			&receivedMessage.CreatedAt,
 		)
 		if err != nil {
@@ -84,14 +86,14 @@ func didReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 }
 
 func (r *ReceivedMessage) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, nodeName, sentAt, topic, messageType, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, nodeName, sentAt, topic, messageType, messageSize, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;")
 	if err != nil {
 		return err
 	}
 
 	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
-	err = stmt.QueryRow(r.ChatID, r.MessageHash, r.MessageID, r.ReceiverKeyUID, r.NodeName, r.SentAt, r.Topic, r.MessageType, r.CreatedAt).Scan(&lastInsertId)
+	err = stmt.QueryRow(r.ChatID, r.MessageHash, r.MessageID, r.ReceiverKeyUID, r.NodeName, r.SentAt, r.Topic, r.MessageType, r.MessageSize, r.CreatedAt).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
