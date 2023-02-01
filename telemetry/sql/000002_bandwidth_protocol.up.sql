@@ -17,3 +17,5 @@ CREATE TABLE IF NOT EXISTS protocolStatsTotals (
     createdAt DATE,
     constraint protocolStatsTotals_unique unique(hostId, protocolName, createdAt)
 );
+
+ALTER TABLE receivedMessages ADD COLUMN messageSize INTEGER;
