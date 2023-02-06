@@ -2,6 +2,7 @@
 // sources:
 // 000001_message_type.up.sql (66B)
 // 000002_bandwidth_protocol.up.sql (719B)
+// 000003_index_truncate.up.sql (598B)
 // doc.go (73B)
 
 package telemetry
@@ -106,8 +107,28 @@ func _000002_bandwidth_protocolUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000002_bandwidth_protocol.up.sql", size: 719, mode: os.FileMode(0664), modTime: time.Unix(1675262994, 0)}
+	info := bindataFileInfo{name: "000002_bandwidth_protocol.up.sql", size: 719, mode: os.FileMode(0664), modTime: time.Unix(1675687684, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xfe, 0x83, 0x69, 0xab, 0x3e, 0xf5, 0x8d, 0x44, 0xb2, 0x6e, 0x52, 0x8d, 0x27, 0xe8, 0x95, 0x28, 0x3c, 0xea, 0x29, 0x93, 0x6d, 0xa3, 0x10, 0xde, 0x9b, 0xc8, 0xa6, 0xb9, 0x80, 0xa1, 0x3, 0x6f}}
+	return a, nil
+}
+
+var __000003_index_truncateUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x91\xb1\x6a\x80\x30\x10\x86\xf7\x3c\xc5\x8d\x0a\x5d\x3a\x67\x4a\x35\x83\xa0\x11\xd2\x08\xdd\x24\xe8\x91\x0a\xb6\x91\xe4\x5a\xfa\xf8\xc5\x4a\x2b\x18\xb5\x6b\xfe\xef\xbe\xfb\xb9\x18\xdd\xa9\x42\x18\x09\x46\x3c\xd5\x12\x02\x0e\x38\x7d\xe2\xd8\x60\x8c\xd6\x61\xe4\xec\x00\x2c\xc1\x93\x1f\xfc\xfc\x4c\x96\xa2\xb6\x84\xf7\x84\xf1\x64\xe7\xd4\x72\x58\x23\x9c\x0b\xe8\x2c\xe1\xc8\x19\x2b\xb4\x5c\xc1\x4a\x95\xf2\x25\xe9\xd3\x0f\x01\x57\x4e\x10\xb4\x2a\x49\xb3\xbf\x34\xe7\xb7\x9e\x7d\x61\x1f\x3e\xde\x4f\x65\x3b\x92\xfd\x20\xf9\xb1\x5a\x72\x89\x7e\x1a\xbf\x1e\x57\x53\x92\x64\xbf\x2f\xca\xbe\xe1\x03\x5c\xb6\x3c\x39\xdd\xb9\x74\xcb\x6e\xb4\x4c\xd4\x46\xea\xab\x3f\x03\x2d\x95\x68\x24\x14\x6d\xdd\x35\x0a\x5e\x7d\xa4\xaa\x04\xd3\xc2\x82\x18\xaa\x92\x5f\x4f\x6f\x8b\xff\x9d\xff\x0e\x00\x00\xff\xff\x11\x42\xcb\x4c\x56\x02\x00\x00")
+
+func _000003_index_truncateUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000003_index_truncateUpSql,
+		"000003_index_truncate.up.sql",
+	)
+}
+
+func _000003_index_truncateUpSql() (*asset, error) {
+	bytes, err := _000003_index_truncateUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000003_index_truncate.up.sql", size: 598, mode: os.FileMode(0664), modTime: time.Unix(1675687705, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xcf, 0x8, 0x4, 0x47, 0xc8, 0x65, 0x38, 0x79, 0x3e, 0x37, 0xec, 0x4e, 0x1a, 0x24, 0x50, 0x3c, 0x1c, 0x75, 0xe8, 0x3b, 0x2, 0x62, 0x2, 0x52, 0x50, 0xff, 0x4a, 0x8f, 0x9d, 0x71, 0x79, 0xf6}}
 	return a, nil
 }
 
@@ -226,6 +247,8 @@ var _bindata = map[string]func() (*asset, error){
 
 	"000002_bandwidth_protocol.up.sql": _000002_bandwidth_protocolUpSql,
 
+	"000003_index_truncate.up.sql": _000003_index_truncateUpSql,
+
 	"doc.go": docGo,
 }
 
@@ -272,6 +295,7 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"000001_message_type.up.sql":       &bintree{_000001_message_typeUpSql, map[string]*bintree{}},
 	"000002_bandwidth_protocol.up.sql": &bintree{_000002_bandwidth_protocolUpSql, map[string]*bintree{}},
+	"000003_index_truncate.up.sql":     &bintree{_000003_index_truncateUpSql, map[string]*bintree{}},
 	"doc.go":                           &bintree{docGo, map[string]*bintree{}},
 }}
 

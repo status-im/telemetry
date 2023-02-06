@@ -13,27 +13,27 @@ type Metric struct {
 }
 
 type ProtocolStats struct {
-	HostID string `json:"hostID"`
+	PeerID string `json:"hostID"`
 	Relay  Metric `json:"relay"`
 	Store  Metric `json:"store"`
 }
 
 func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric Metric) error {
-	stmt, err := db.Prepare("INSERT INTO protocolStatsRate (hostId, protocolName, rateIn, rateOut, createdAt) VALUES ($1, $2, $3, $4, $5);")
+	stmt, err := db.Prepare("INSERT INTO protocolStatsRate (peerID, protocolName, rateIn, rateOut, createdAt) VALUES ($1, $2, $3, $4, $5);")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(r.HostID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
-	if err != nil {
-		return err
-	}
-
-	stmt, err = db.Prepare("INSERT INTO protocolStatsTotals (hostId, protocolName, totalIn, totalOut, createdAt) VALUES ($1, $2, $3, $4, $5) ON CONFLICT ON CONSTRAINT protocolStatsTotals_unique DO UPDATE SET totalIn = $3, totalOut = $4;")
+	_, err = stmt.Exec(r.PeerID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(r.HostID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
+	stmt, err = db.Prepare("INSERT INTO protocolStatsTotals (peerID, protocolName, totalIn, totalOut, createdAt) VALUES ($1, $2, $3, $4, $5) ON CONFLICT ON CONSTRAINT protocolStatsTotals_unique DO UPDATE SET totalIn = $3, totalOut = $4;")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(r.PeerID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
 	if err != nil {
 		return err
 	}
