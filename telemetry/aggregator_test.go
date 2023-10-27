@@ -41,6 +41,11 @@ func dropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
+	_, err = db.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
 	db.Close()
 }
 

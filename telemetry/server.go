@@ -26,6 +26,8 @@ func NewServer(db *sql.DB) *Server {
 
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
 	server.Router.HandleFunc("/received-messages", server.createReceivedMessages).Methods("POST")
+	server.Router.HandleFunc("/received-envelope", server.createReceivedEnvelope).Methods("POST")
+	server.Router.HandleFunc("/update-envelope", server.updateEnvelope).Methods("POST")
 	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
 
 	return server
@@ -69,6 +71,73 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err := respondWithJSON(w, http.StatusCreated, receivedMessages)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
+	)
+}
+
+func (s *Server) createReceivedEnvelope(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var receivedEnvelope ReceivedEnvelope
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&receivedEnvelope); err != nil {
+		log.Println(err)
+
+		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+	defer r.Body.Close()
+
+	err := receivedEnvelope.put(s.DB)
+	if err != nil {
+		log.Println("could not save envelope", err, receivedEnvelope)
+	}
+
+	err = respondWithJSON(w, http.StatusCreated, receivedEnvelope)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
+	)
+}
+
+func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var receivedEnvelope ReceivedEnvelope
+	decoder := json.NewDecoder(r.Body)
+	log.Println("Update envelope")
+	if err := decoder.Decode(&receivedEnvelope); err != nil {
+		log.Println(err)
+
+		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+	defer r.Body.Close()
+
+	err := receivedEnvelope.updateProcessingError(s.DB)
+	if err != nil {
+		log.Println("could not update envelope", err, receivedEnvelope)
+	}
+
+	err = respondWithJSON(w, http.StatusCreated, receivedEnvelope)
 	if err != nil {
 		log.Println(err)
 	}
