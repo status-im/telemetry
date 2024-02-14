@@ -7,6 +7,16 @@ pipeline {
       description: 'Enable to deploye the Docker image.',
       defaultValue: false,
     )
+    string(
+      name: 'DOCKER_CRED',
+      description: 'Name of Docker Registry credential.',
+      defaultValue: params.DOCKER_CRED ?: 'harbor-telemetry-robot',
+    )
+    string(
+      name: 'DOCKER_REGISTRY_URL',
+      description: 'URL of the Docker Registry',
+      defaultValue: params.DOCKER_REGISTRY_URL ?: 'https://harbor.status.im'
+    )
   }
 
   options {
@@ -20,7 +30,7 @@ pipeline {
   }
 
   environment {
-    IMAGE_NAME = "statusteam/telemetry"
+    IMAGE_NAME = "status-im/telemetry"
     IMAGE_DEFAULT_TAG = "${env.GIT_COMMIT.take(7)}"
     IMAGE_DEPLOY_TAG = "deploy"
   }
@@ -34,7 +44,7 @@ pipeline {
 
     stage('Push') { steps { script {
       withDockerRegistry([
-        credentialsId: "dockerhub-statusteam-auto"
+        credentialsId: params.DOCKER_CRED, url: params.DOCKER_REGISTRY_URL
       ]) {
         image.push()
       }
@@ -44,10 +54,10 @@ pipeline {
       when { expression { params.DEPLOY } }
       steps { script {
         withDockerRegistry([
-          credentialsId: "dockerhub-statusteam-auto"
+          credentialsId: params.DOCKER_CRED, url: params.DOCKER_REGISTRY_URL
         ]) {
           image.push(env.IMAGE_DEPLOY_TAG)
         }
     } } }
   } // stages
-} // pipeline
+}
