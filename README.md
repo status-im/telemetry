@@ -14,6 +14,16 @@ Then you can run the server with:
 go run cmd/server/main.go -data-source-name postgres://telemetry:newPassword@127.0.0.1:5432/telemetry
 ```
 
+If trying to run locally you receive the following error:
+```
+pq: SSL is not enabled on the server
+```
+
+Run this command instead:
+```
+go run cmd/server/main.go -data-source-name "postgres://telemetry:newPassword@127.0.0.1:5432/telemetry?sslmode=disable"
+```
+
 Finally, to run the test:
 ```
 make test

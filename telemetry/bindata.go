@@ -6,6 +6,7 @@
 // 000004_envelope.table.up.sql (531B)
 // 000005_pushed_envelope.up.sql (574B)
 // 000006_status_version.up.sql (198B)
+// 000007_waku_push_filter.up.sql (523B)
 // doc.go (73B)
 
 package telemetry
@@ -169,7 +170,7 @@ func _000005_pushed_envelopeUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000005_pushed_envelope.up.sql", size: 574, mode: os.FileMode(0644), modTime: time.Unix(1717560336, 0)}
+	info := bindataFileInfo{name: "000005_pushed_envelope.up.sql", size: 574, mode: os.FileMode(0644), modTime: time.Unix(1719028717, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x7d, 0xaf, 0x8a, 0xcb, 0x97, 0x1e, 0xc6, 0xf6, 0x86, 0xe4, 0x1b, 0x67, 0x10, 0x87, 0x8e, 0x80, 0x1d, 0x5a, 0x7d, 0x64, 0xd0, 0x89, 0x3f, 0x1e, 0x6f, 0x93, 0x87, 0x4a, 0xd7, 0x87, 0xb8, 0x5e}}
 	return a, nil
 }
@@ -189,8 +190,28 @@ func _000006_status_versionUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000006_status_version.up.sql", size: 198, mode: os.FileMode(0644), modTime: time.Unix(1717560330, 0)}
+	info := bindataFileInfo{name: "000006_status_version.up.sql", size: 198, mode: os.FileMode(0644), modTime: time.Unix(1719028717, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2b, 0x11, 0xee, 0x9f, 0x4f, 0xf5, 0x0, 0x9a, 0x98, 0xe9, 0x44, 0x21, 0x2e, 0x57, 0xf7, 0xae, 0xf3, 0xb2, 0x3d, 0x94, 0x40, 0x69, 0xa7, 0x1d, 0x62, 0x57, 0x31, 0x9f, 0x60, 0x6, 0xed, 0x80}}
+	return a, nil
+}
+
+var __000007_waku_push_filterUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x91\xc1\x4a\x03\x31\x10\x86\xcf\xdd\xa7\x98\xe3\x2e\xec\x49\xe8\xc9\x53\x5c\x52\x1b\x5c\xd3\x92\x44\xb1\x27\x49\x37\x03\x0d\x6e\xb3\xdb\x64\x42\x7d\x7c\xa1\x82\x76\xc5\xb6\xa7\x61\xf8\x3f\xf8\x87\x6f\x1a\xc5\x99\xe1\x60\xd8\x43\xcb\x41\x2c\x40\xae\x0c\xf0\x37\xa1\x8d\x86\xa3\xfd\xc8\xeb\x9c\x76\x0b\xdf\x13\x46\x28\x8b\x99\x77\xa0\xb9\x12\xac\x85\xb5\x12\xcf\x4c\x6d\xe0\x89\x6f\xea\x62\x76\xb4\x7d\x8f\xc4\x9c\x8b\x98\x12\xbc\x32\xd5\x2c\x99\x2a\xef\xe6\xf3\xaa\x2e\x66\x23\x62\x14\x4e\x63\x70\x18\x27\xd9\xa9\x4b\xbe\xb4\xed\x0f\xa4\x70\x1c\x22\x5d\xc1\x12\x1e\x32\x86\x0e\x97\x36\xed\x6e\x42\x66\x20\xdb\xdf\xa4\x44\x70\xf8\x79\x91\xea\x86\x40\x18\xc8\x0c\xa3\xef\x2e\x1f\x9f\xb7\x29\x6f\xaf\x33\xe4\xf7\x98\xc8\xee\x47\x10\xd2\xf0\x47\xae\x26\x2d\x11\x2d\xa1\x63\xf4\x4f\x58\x00\x00\x34\x2b\xa9\x8d\x62\x42\x9a\x3f\x5f\x79\xcf\xc1\x1f\x32\xc2\xf7\x28\xcf\x5d\xd7\x30\x95\x5a\xc3\xb9\xbd\xdf\xed\x24\xa0\x2a\xaa\xfb\xaf\x00\x00\x00\xff\xff\x48\xf0\x3d\x30\x0b\x02\x00\x00")
+
+func _000007_waku_push_filterUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000007_waku_push_filterUpSql,
+		"000007_waku_push_filter.up.sql",
+	)
+}
+
+func _000007_waku_push_filterUpSql() (*asset, error) {
+	bytes, err := _000007_waku_push_filterUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000007_waku_push_filter.up.sql", size: 523, mode: os.FileMode(0644), modTime: time.Unix(1719271502, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x5d, 0xa, 0x2c, 0x93, 0xa, 0x1f, 0xeb, 0x49, 0x60, 0xe2, 0x8, 0x46, 0xb5, 0x16, 0xa4, 0xa9, 0x7f, 0xec, 0xfb, 0xe1, 0xdc, 0x12, 0x15, 0x17, 0x1, 0x28, 0xa3, 0xca, 0xeb, 0x45, 0x81, 0x31}}
 	return a, nil
 }
 
@@ -311,6 +332,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000004_envelope.table.up.sql":     _000004_envelopeTableUpSql,
 	"000005_pushed_envelope.up.sql":    _000005_pushed_envelopeUpSql,
 	"000006_status_version.up.sql":     _000006_status_versionUpSql,
+	"000007_waku_push_filter.up.sql":   _000007_waku_push_filterUpSql,
 	"doc.go":                           docGo,
 }
 
@@ -366,6 +388,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000004_envelope.table.up.sql":     {_000004_envelopeTableUpSql, map[string]*bintree{}},
 	"000005_pushed_envelope.up.sql":    {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
 	"000006_status_version.up.sql":     {_000006_status_versionUpSql, map[string]*bintree{}},
+	"000007_waku_push_filter.up.sql":   {_000007_waku_push_filterUpSql, map[string]*bintree{}},
 	"doc.go":                           {docGo, map[string]*bintree{}},
 }}
 
