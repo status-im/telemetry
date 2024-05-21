@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS builder
+FROM golang:1.22-alpine3.19 AS builder
 
 RUN apk add --no-cache make
 
@@ -8,7 +8,7 @@ ADD . .
 RUN make build
 
 # Copy the binary to the second image
-FROM alpine:3.14
+FROM alpine:3.19
 
 LABEL maintainer="jakub@status.im"
 LABEL source="https://github.com/status-im/telemetry"
