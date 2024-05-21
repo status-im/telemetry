@@ -2,10 +2,10 @@ pipeline {
   agent { label 'linux' }
 
   parameters {
-    booleanParam(
-      name: 'DEPLOY',
-      description: 'Enable to deploye the Docker image.',
-      defaultValue: false,
+    string(
+      name: 'IMAGE_TAG',
+      defaultValue: params.IMAGE_TAG ?: 'latest',
+      description: 'Optional Docker image tag to push.'
     )
   }
 
@@ -20,33 +20,29 @@ pipeline {
   }
 
   environment {
-    IMAGE_NAME = "statusteam/telemetry"
+    DOCKER_REGISTRY = 'harbor.status.im'
+    IMAGE_NAME = "wakuorg/telemetry"
     IMAGE_DEFAULT_TAG = "${env.GIT_COMMIT.take(7)}"
-    IMAGE_DEPLOY_TAG = "deploy"
   }
 
   stages {
-    stage('Build') { steps { script {
-      image = docker.build(
-        "${env.IMAGE_NAME}:${env.IMAGE_DEFAULT_TAG}"
-      )
-    } } }
-
-    stage('Push') { steps { script {
-      withDockerRegistry([
-        credentialsId: "dockerhub-statusteam-auto"
-      ]) {
-        image.push()
-      }
-    } } }
+    stage('Build') {
+      steps { script {
+        image = docker.build(
+          "${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_DEFAULT_TAG}",
+          "--build-arg='commit=${GIT_COMMIT}' .",
+        )
+      } }
+    }
 
     stage('Deploy') {
-      when { expression { params.DEPLOY } }
+      when { expression { params.IMAGE_TAG != '' } }
       steps { script {
         withDockerRegistry([
-          credentialsId: "dockerhub-statusteam-auto"
+          credentialsId: 'harbor-telemetry-robot',
+          url: 'https://${DOCKER_REGISTRY}',
         ]) {
-          image.push(env.IMAGE_DEPLOY_TAG)
+          image.push(env.IMAGE_TAG)
         }
     } } }
   } // stages
