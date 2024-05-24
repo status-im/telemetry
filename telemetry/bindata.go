@@ -5,6 +5,7 @@
 // 000003_index_truncate.up.sql (598B)
 // 000004_envelope.table.up.sql (531B)
 // 000005_pushed_envelope.up.sql (574B)
+// 000006_status_version.up.sql (198B)
 // doc.go (73B)
 
 package telemetry
@@ -168,8 +169,28 @@ func _000005_pushed_envelopeUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000005_pushed_envelope.up.sql", size: 574, mode: os.FileMode(0644), modTime: time.Unix(1717559658, 0)}
+	info := bindataFileInfo{name: "000005_pushed_envelope.up.sql", size: 574, mode: os.FileMode(0644), modTime: time.Unix(1717560336, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x7d, 0xaf, 0x8a, 0xcb, 0x97, 0x1e, 0xc6, 0xf6, 0x86, 0xe4, 0x1b, 0x67, 0x10, 0x87, 0x8e, 0x80, 0x1d, 0x5a, 0x7d, 0x64, 0xd0, 0x89, 0x3f, 0x1e, 0x6f, 0x93, 0x87, 0x4a, 0xd7, 0x87, 0xb8, 0x5e}}
+	return a, nil
+}
+
+var __000006_status_versionUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\x28\x4a\x4d\x4e\xcd\x2c\x4b\x4d\xf1\x4d\x2d\x2e\x4e\x4c\x4f\x2d\x56\x70\x74\x71\x51\x70\xf6\xf7\x09\xf5\xf5\x53\x28\x2e\x49\x2c\x29\x2d\x0e\x4b\x2d\x2a\xce\xcc\xcf\x53\x08\x73\x0c\x72\xf6\x70\x0c\xd2\x30\x36\xd4\xb4\xe6\xc2\x66\x84\x6b\x5e\x59\x6a\x4e\x7e\x01\x59\x66\x14\xa7\xe6\x95\x90\xa8\x1f\x10\x00\x00\xff\xff\xeb\x4e\x39\x66\xc6\x00\x00\x00")
+
+func _000006_status_versionUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000006_status_versionUpSql,
+		"000006_status_version.up.sql",
+	)
+}
+
+func _000006_status_versionUpSql() (*asset, error) {
+	bytes, err := _000006_status_versionUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000006_status_version.up.sql", size: 198, mode: os.FileMode(0644), modTime: time.Unix(1717560330, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2b, 0x11, 0xee, 0x9f, 0x4f, 0xf5, 0x0, 0x9a, 0x98, 0xe9, 0x44, 0x21, 0x2e, 0x57, 0xf7, 0xae, 0xf3, 0xb2, 0x3d, 0x94, 0x40, 0x69, 0xa7, 0x1d, 0x62, 0x57, 0x31, 0x9f, 0x60, 0x6, 0xed, 0x80}}
 	return a, nil
 }
 
@@ -289,6 +310,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000003_index_truncate.up.sql":     _000003_index_truncateUpSql,
 	"000004_envelope.table.up.sql":     _000004_envelopeTableUpSql,
 	"000005_pushed_envelope.up.sql":    _000005_pushed_envelopeUpSql,
+	"000006_status_version.up.sql":     _000006_status_versionUpSql,
 	"doc.go":                           docGo,
 }
 
@@ -343,6 +365,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000003_index_truncate.up.sql":     {_000003_index_truncateUpSql, map[string]*bintree{}},
 	"000004_envelope.table.up.sql":     {_000004_envelopeTableUpSql, map[string]*bintree{}},
 	"000005_pushed_envelope.up.sql":    {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
+	"000006_status_version.up.sql":     {_000006_status_versionUpSql, map[string]*bintree{}},
 	"doc.go":                           {docGo, map[string]*bintree{}},
 }}
 

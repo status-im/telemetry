@@ -45,6 +45,7 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 	server.Router.HandleFunc("/sent-envelope", server.createSentEnvelope).Methods("POST")
 	server.Router.HandleFunc("/update-envelope", server.updateEnvelope).Methods("POST")
 	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
+	server.Router.HandleFunc("/record-metrics", server.createTelemetryData).Methods("POST")
 	server.Router.Use(server.rateLimit)
 
 	return server
@@ -53,6 +54,88 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "OK")
+}
+
+type TelemetryType string
+
+const (
+	ProtocolStatsMetric    TelemetryType = "ProtocolStats"
+	ReceivedEnvelopeMetric TelemetryType = "ReceivedEnvelope"
+	SentEnvelopeMetric     TelemetryType = "SentEnvelope"
+	UpdateEnvelopeMetric   TelemetryType = "UpdateEnvelope"
+	ReceivedMessagesMetric TelemetryType = "ReceivedMessages"
+)
+
+type TelemetryRequest struct {
+	Id            int              `json:"id"`
+	TelemetryType TelemetryType    `json:"telemetry_type"`
+	TelemetryData *json.RawMessage `json:"telemetry_data"`
+}
+
+func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var telemetryData []TelemetryRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&telemetryData); err != nil {
+		log.Println(err)
+		http.Error(w, "Failed to decode telemetry data", http.StatusBadRequest)
+		return
+	}
+
+	var errorDetails []map[string]interface{}
+
+	for _, data := range telemetryData {
+		switch data.TelemetryType {
+		case ProtocolStatsMetric:
+			var stats ProtocolStats
+			if err := json.Unmarshal(*data.TelemetryData, &stats); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error decoding protocol stats: %v", err)})
+				continue
+			}
+			if err := stats.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving protocol stats: %v", err)})
+				continue
+			}
+		case ReceivedEnvelopeMetric:
+			var envelope ReceivedEnvelope
+			if err := json.Unmarshal(*data.TelemetryData, &envelope); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error decoding received envelope: %v", err)})
+				continue
+			}
+			if err := envelope.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving received envelope: %v", err)})
+				continue
+			}
+		case SentEnvelopeMetric:
+			var envelope SentEnvelope
+			if err := json.Unmarshal(*data.TelemetryData, &envelope); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error decoding sent envelope: %v", err)})
+				continue
+			}
+			if err := envelope.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving sent envelope: %v", err)})
+				continue
+			}
+		default:
+			errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType)})
+		}
+	}
+
+	if len(errorDetails) > 0 {
+		log.Printf("Errors encountered: %v", errorDetails)
+	}
+
+	err := respondWithJSON(w, http.StatusCreated, errorDetails)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
+	)
 }
 
 func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) {
@@ -198,11 +281,6 @@ func (s *Server) createSentEnvelope(w http.ResponseWriter, r *http.Request) {
 	err := sentEnvelope.put(s.DB)
 	if err != nil {
 		log.Println("could not save envelope", err, sentEnvelope)
-		err := respondWithError(w, http.StatusBadRequest, "could not save envelope")
-		if err != nil {
-			log.Println(err)
-		}
-		return
 	}
 
 	err = respondWithJSON(w, http.StatusCreated, sentEnvelope)
