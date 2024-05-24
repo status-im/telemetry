@@ -60,3 +60,44 @@ func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
 
 	return nil
 }
+
+type SentEnvelope struct {
+	ID              int    `json:"id"`
+	MessageHash     string `json:"messageHash"`
+	SentAt          int64  `json:"sentAt"`
+	CreatedAt       int64  `json:"createdAt"`
+	PubsubTopic     string `json:"pubsubTopic"`
+	Topic           string `json:"topic"`
+	SenderKeyUID    string `json:"senderKeyUID"`
+	NodeName        string `json:"nodeName"`
+	ProcessingError string `json:"processingError"`
+	PublishMethod   string `json:"publishMethod"`
+}
+
+func (r *SentEnvelope) put(db *sql.DB) error {
+	r.CreatedAt = time.Now().Unix()
+	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
+							topic, senderKeyUID, nodeName, publishMethod)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
+							RETURNING id;`)
+	if err != nil {
+		return err
+	}
+
+	lastInsertId := int64(0)
+	res, err := stmt.Exec(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.NodeName, r.PublishMethod)
+	lastInsertId, _ = res.LastInsertId()
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		} else {
+			return err
+		}
+	}
+	defer stmt.Close()
+	r.ID = int(lastInsertId)
+
+	return nil
+}

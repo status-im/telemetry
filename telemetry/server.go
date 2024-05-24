@@ -42,6 +42,7 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
 	server.Router.HandleFunc("/received-messages", server.createReceivedMessages).Methods("POST")
 	server.Router.HandleFunc("/received-envelope", server.createReceivedEnvelope).Methods("POST")
+	server.Router.HandleFunc("/sent-envelope", server.createSentEnvelope).Methods("POST")
 	server.Router.HandleFunc("/update-envelope", server.updateEnvelope).Methods("POST")
 	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
 	server.Router.Use(server.rateLimit)
@@ -176,6 +177,44 @@ func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 		zap.String("method", r.Method),
 		zap.String("requestURI", r.RequestURI),
 		zap.Duration("duration", time.Since(start)),
+	)
+}
+
+func (s *Server) createSentEnvelope(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var sentEnvelope SentEnvelope
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&sentEnvelope); err != nil {
+		log.Println(err)
+
+		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+	defer r.Body.Close()
+
+	err := sentEnvelope.put(s.DB)
+	if err != nil {
+		log.Println("could not save envelope", err, sentEnvelope)
+		err := respondWithError(w, http.StatusBadRequest, "could not save envelope")
+		if err != nil {
+			log.Println(err)
+		}
+		return
+	}
+
+	err = respondWithJSON(w, http.StatusCreated, sentEnvelope)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
 	)
 }
 
