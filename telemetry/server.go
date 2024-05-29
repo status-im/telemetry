@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -12,19 +13,30 @@ import (
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"golang.org/x/time/rate"
+)
+
+const (
+	RATE_LIMIT = rate.Limit(10)
+	BURST      = 1
 )
 
 type Server struct {
-	Router *mux.Router
-	DB     *sql.DB
-	logger *zap.Logger
+	Router      *mux.Router
+	DB          *sql.DB
+	logger      *zap.Logger
+	rateLimiter RateLimiter
+	ctx         context.Context
 }
 
 func NewServer(db *sql.DB, logger *zap.Logger) *Server {
+	ctx := context.Background()
 	server := &Server{
-		Router: mux.NewRouter().StrictSlash(true),
-		DB:     db,
-		logger: logger,
+		Router:      mux.NewRouter().StrictSlash(true),
+		DB:          db,
+		logger:      logger,
+		rateLimiter: *NewRateLimiter(ctx, RATE_LIMIT, BURST),
+		ctx:         ctx,
 	}
 
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
@@ -32,6 +44,7 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 	server.Router.HandleFunc("/received-envelope", server.createReceivedEnvelope).Methods("POST")
 	server.Router.HandleFunc("/update-envelope", server.updateEnvelope).Methods("POST")
 	server.Router.HandleFunc("/health", handleHealthCheck).Methods("GET")
+	server.Router.Use(server.rateLimit)
 
 	return server
 }
@@ -205,6 +218,20 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 		zap.String("requestURI", r.RequestURI),
 		zap.Duration("duration", time.Since(start)),
 	)
+}
+
+func (s *Server) rateLimit(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		limiter := s.rateLimiter.GetLimiter(r.RemoteAddr)
+		// Do stuff here
+		if !limiter.Allow() {
+			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+			return
+		}
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) Start(port int) {
