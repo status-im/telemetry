@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func NewMock() *sql.DB {
-	db, err := sql.Open("postgres", "postgres://telemetry:newPassword@127.0.0.1:5432/telemetry_test")
+	db, err := sql.Open("postgres", "postgres://telemetry:newPassword@127.0.0.1:5432/telemetrydb?sslmode=disable")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
@@ -36,14 +37,44 @@ func dropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
+	_, err = db.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsRate")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsTotals")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
 	_, err = db.Exec("DROP TABLE IF EXISTS schema_migrations")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
+	_, err = db.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
 	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessageAggregated_runAt")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsRate_idx1")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsTotals_idx1")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
 	db.Close()
@@ -118,7 +149,10 @@ func TestRunAggregatorSimple(t *testing.T) {
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
-	agg := NewAggregator(db)
+	logger, err := zap.NewDevelopment()
+	require.NoError(t, err)
+	agg, err := NewAggregator(db, logger)
+	require.NoError(t, err)
 
 	agg.Run(time.Hour)
 
@@ -213,7 +247,10 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
-	agg := NewAggregator(db)
+	logger, err := zap.NewDevelopment()
+	require.NoError(t, err)
+	agg, err := NewAggregator(db, logger)
+	require.NoError(t, err)
 
 	agg.Run(time.Hour)
 

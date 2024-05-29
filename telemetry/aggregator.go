@@ -2,23 +2,25 @@ package telemetry
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Aggregator struct {
-	DB *sql.DB
+	DB     *sql.DB
+	logger zap.Logger
 }
 
-func NewAggregator(db *sql.DB) *Aggregator {
+func NewAggregator(db *sql.DB, logger *zap.Logger) (*Aggregator, error) {
 	return &Aggregator{
-		DB: db,
-	}
+		DB:     db,
+		logger: *logger,
+	}, nil
 }
 
 func (a *Aggregator) Run(d time.Duration) {
-	log.Printf("started aggregator for %s\n", d)
+	a.logger.Info("started aggregator", zap.Duration("duration", d))
 	// Define the duration starts and end.
 	// Allow a buffer of the duration to define the start and end.
 	// This is to ensure we wait for people not being connected or if they received messages with delay
@@ -29,7 +31,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	// Query all received message for a specific duration
 	receivedMessages, err := queryReceivedMessagesBetween(a.DB, startsAt, endsAt)
 	if err != nil {
-		log.Fatalf("could not query received message: %s", err)
+		a.logger.Fatal("could not query received message", zap.Error(err))
 	}
 
 	// Group the received messages by chat id and key uid
@@ -43,7 +45,7 @@ func (a *Aggregator) Run(d time.Duration) {
 			receivedMessage.ChatID,
 		)
 		if err != nil {
-			log.Fatalf("could not check message id: %s, because of %s", fmt.Sprint(receivedMessage.ID), err)
+			a.logger.Fatal("could not check message", zap.Int("messageID", receivedMessage.ID), zap.Error(err))
 		}
 		if !ok {
 			continue
@@ -56,7 +58,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	}
 
 	if len(groupedMessages) == 0 {
-		log.Println("no record found, finishing early")
+		a.logger.Info("no record found, finishing early")
 		return
 	}
 
@@ -94,10 +96,10 @@ func (a *Aggregator) Run(d time.Duration) {
 		}
 		err := rma.put(a.DB)
 		if err != nil {
-			log.Fatalf("could not store received message aggregated: %s", err)
+			a.logger.Fatal("could not store received message aggregated", zap.Error(err))
 		}
 	}
-	log.Printf("stored %d chat id records", len(rChatID))
+	a.logger.Sugar().Infof("stored %d chat id records", len(rChatID))
 
 	// Calculate the global reliability R = (R(0) + R(1)+ .... + R(n)) / len(Rch)
 	rChatIDTotal := 0.0
@@ -114,7 +116,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	}
 	err = rma.put(a.DB)
 	if err != nil {
-		log.Fatalf("could not store received message aggregated: %s", err)
+		a.logger.Fatal("could not store received message aggregateds", zap.Error(err))
 	}
-	log.Printf("finished aggregator for %s\n", d)
+	a.logger.Info("finished aggregator", zap.Duration("duration", d))
 }
