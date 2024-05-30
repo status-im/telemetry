@@ -35,7 +35,7 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 		Router:      mux.NewRouter().StrictSlash(true),
 		DB:          db,
 		logger:      logger,
-		rateLimiter: *NewRateLimiter(ctx, RATE_LIMIT, BURST),
+		rateLimiter: *NewRateLimiter(ctx, RATE_LIMIT, BURST, logger),
 		ctx:         ctx,
 	}
 
@@ -224,12 +224,10 @@ func (s *Server) rateLimit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		limiter := s.rateLimiter.GetLimiter(r.RemoteAddr)
-		// Do stuff here
 		if !limiter.Allow() {
 			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			return
 		}
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
 }
