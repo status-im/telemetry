@@ -9,6 +9,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 // Migrate applies migrations.
@@ -41,7 +42,7 @@ func migrateDB(db *sql.DB, resources *bindata.AssetSource, driver database.Drive
 	return nil
 }
 
-func OpenDb(dataSourceName string) *sql.DB {
+func OpenDb(dataSourceName string, logger *zap.Logger) *sql.DB {
 	db, err := sql.Open("postgres", dataSourceName)
 	if err != nil {
 		log.Fatalf("could not connect to database: %v", err)
@@ -50,12 +51,12 @@ func OpenDb(dataSourceName string) *sql.DB {
 	if err := db.Ping(); err != nil {
 		log.Fatalf("unable to reach database: %v", err)
 	}
-	log.Println("Connected to database")
+	logger.Info("Connected to database")
 
 	if err := createTables(db); err != nil {
 		log.Fatalf("unable to create the table: %v", err)
 	}
-	log.Println("DB initialized")
+	logger.Info("DB initialized")
 
 	return db
 }

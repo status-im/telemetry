@@ -11,17 +11,20 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 type Server struct {
 	Router *mux.Router
 	DB     *sql.DB
+	logger *zap.Logger
 }
 
-func NewServer(db *sql.DB) *Server {
+func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 	server := &Server{
 		Router: mux.NewRouter().StrictSlash(true),
 		DB:     db,
+		logger: logger,
 	}
 
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
@@ -43,11 +46,11 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	var receivedMessages []ReceivedMessage
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&receivedMessages); err != nil {
-		log.Println(err)
+		s.logger.Error("failed to decode messages", zap.Error(err))
 
 		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
@@ -56,7 +59,7 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	var ids []int
 	for _, receivedMessage := range receivedMessages {
 		if err := receivedMessage.put(s.DB); err != nil {
-			log.Println("could not save message", err, receivedMessage)
+			s.logger.Error("could not save message", zap.Error(err), zap.Any("receivedMessage", receivedMessage))
 			continue
 		}
 		ids = append(ids, receivedMessage.ID)
@@ -65,21 +68,22 @@ func (s *Server) createReceivedMessages(w http.ResponseWriter, r *http.Request) 
 	if len(ids) != len(receivedMessages) {
 		err := respondWithError(w, http.StatusInternalServerError, "Could not save all record")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
 
 	err := respondWithJSON(w, http.StatusCreated, receivedMessages)
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("failed to respond", zap.Error(err))
+		return
 	}
 
-	log.Printf(
-		"%s\t%s\t%s",
-		r.Method,
-		r.RequestURI,
-		time.Since(start),
+	s.logger.Info(
+		"handled received message",
+		zap.String("method", r.Method),
+		zap.String("requestURI", r.RequestURI),
+		zap.Duration("duration", time.Since(start)),
 	)
 }
 
@@ -88,11 +92,12 @@ func (s *Server) createReceivedEnvelope(w http.ResponseWriter, r *http.Request) 
 	var receivedEnvelope ReceivedEnvelope
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&receivedEnvelope); err != nil {
-		log.Println(err)
+		s.logger.Error("failed to decode envelope", zap.Error(err))
 
 		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
+			return
 		}
 		return
 	}
@@ -100,19 +105,24 @@ func (s *Server) createReceivedEnvelope(w http.ResponseWriter, r *http.Request) 
 
 	err := receivedEnvelope.put(s.DB)
 	if err != nil {
-		log.Println("could not save envelope", err, receivedEnvelope)
+		s.logger.Error("could not save envelope", zap.Error(err), zap.Any("envelope", receivedEnvelope))
+		err := respondWithError(w, http.StatusBadRequest, "Could not save the envelope")
+		if err != nil {
+			s.logger.Error("failed to respond", zap.Error(err))
+		}
 	}
 
 	err = respondWithJSON(w, http.StatusCreated, receivedEnvelope)
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("failed to respond", zap.Error(err))
+		return
 	}
 
-	log.Printf(
-		"%s\t%s\t%s",
-		r.Method,
-		r.RequestURI,
-		time.Since(start),
+	s.logger.Info(
+		"handled received envelope",
+		zap.String("method", r.Method),
+		zap.String("requestURI", r.RequestURI),
+		zap.Duration("duration", time.Since(start)),
 	)
 }
 
@@ -120,13 +130,13 @@ func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	var receivedEnvelope ReceivedEnvelope
 	decoder := json.NewDecoder(r.Body)
-	log.Println("Update envelope")
+	s.logger.Info("update envelope")
 	if err := decoder.Decode(&receivedEnvelope); err != nil {
-		log.Println(err)
+		s.logger.Error("failed to decode envelope", zap.Error(err))
 
 		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
@@ -134,19 +144,25 @@ func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 
 	err := receivedEnvelope.updateProcessingError(s.DB)
 	if err != nil {
-		log.Println("could not update envelope", err, receivedEnvelope)
+		s.logger.Error("could not update envelope", zap.Error(err), zap.Any("envelope", receivedEnvelope))
+		err := respondWithError(w, http.StatusBadRequest, "Could not update the envelope")
+		if err != nil {
+			s.logger.Error("failed to respond", zap.Error(err))
+		}
+		return
 	}
 
 	err = respondWithJSON(w, http.StatusCreated, receivedEnvelope)
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("failed to respond", zap.Error(err))
+		return
 	}
 
-	log.Printf(
-		"%s\t%s\t%s",
-		r.Method,
-		r.RequestURI,
-		time.Since(start),
+	s.logger.Info(
+		"handled update message",
+		zap.String("method", r.Method),
+		zap.String("requestURI", r.RequestURI),
+		zap.Duration("duration", time.Since(start)),
 	)
 }
 
@@ -155,11 +171,11 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 	var protocolStats ProtocolStats
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&protocolStats); err != nil {
-		log.Println(err)
+		s.logger.Error("failed to decode protocol stats", zap.Error(err))
 
 		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
@@ -169,27 +185,29 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 	protocolStats.PeerID = hex.EncodeToString(peerIDHash[:])
 
 	if err := protocolStats.put(s.DB); err != nil {
+		s.logger.Error("failed to save protocol stats", zap.Error(err))
 		err := respondWithError(w, http.StatusInternalServerError, "Could not save protocol stats")
 		if err != nil {
-			log.Println(err)
+			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
 
 	err := respondWithJSON(w, http.StatusCreated, map[string]string{"error": ""})
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("failed to respond", zap.Error(err))
+		return
 	}
 
-	log.Printf(
-		"%s\t%s\t%s",
-		r.Method,
-		r.RequestURI,
-		time.Since(start),
+	s.logger.Info(
+		"handled protocol stats",
+		zap.String("method", r.Method),
+		zap.String("requestURI", r.RequestURI),
+		zap.Duration("duration", time.Since(start)),
 	)
 }
 
 func (s *Server) Start(port int) {
-	log.Printf("Starting server on port %d", port)
+	s.logger.Info("Starting server", zap.Int("port", port))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), s.Router))
 }
