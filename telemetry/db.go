@@ -72,9 +72,7 @@ func createTables(db *sql.DB) error {
 		sentAt INTEGER NOT NULL,
 		topic VARCHAR(255) NOT NULL,
 		createdAt INTEGER NOT NULL,
-
 		constraint receivedMessages_unique unique(chatId, messageHash, receiverKeyUID, nodeName)
-
 	);`
 	_, err := db.Exec(sqlStmt)
 

@@ -16,13 +16,14 @@ type ReceivedEnvelope struct {
 	ReceiverKeyUID  string `json:"receiverKeyUID"`
 	NodeName        string `json:"nodeName"`
 	ProcessingError string `json:"processingError"`
+	StatusVersion   string `json:"statusVersion"`
 }
 
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, receiverKeyUID, nodeName, processingError)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+							topic, receiverKeyUID, nodeName, processingError, statusVersion)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -30,7 +31,7 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	}
 
 	lastInsertId := 0
-	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName, r.ProcessingError).Scan(&lastInsertId)
+	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName, r.ProcessingError, r.StatusVersion).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
@@ -57,6 +58,48 @@ func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+type SentEnvelope struct {
+	ID              int    `json:"id"`
+	MessageHash     string `json:"messageHash"`
+	SentAt          int64  `json:"sentAt"`
+	CreatedAt       int64  `json:"createdAt"`
+	PubsubTopic     string `json:"pubsubTopic"`
+	Topic           string `json:"topic"`
+	SenderKeyUID    string `json:"senderKeyUID"`
+	NodeName        string `json:"nodeName"`
+	ProcessingError string `json:"processingError"`
+	PublishMethod   string `json:"publishMethod"`
+	StatusVersion   string `json:"statusVersion"`
+}
+
+func (r *SentEnvelope) put(db *sql.DB) error {
+	r.CreatedAt = time.Now().Unix()
+	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
+							topic, senderKeyUID, nodeName, publishMethod, statusVersion)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
+							RETURNING id;`)
+	if err != nil {
+		return err
+	}
+
+	lastInsertId := int64(0)
+	res, err := stmt.Exec(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.NodeName, r.PublishMethod, r.StatusVersion)
+	if err != nil {
+		return err
+	}
+
+	lastInsertId, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+	r.ID = int(lastInsertId)
 
 	return nil
 }
