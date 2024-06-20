@@ -88,18 +88,51 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 	}
 
 	lastInsertId := int64(0)
-	res, err := stmt.Exec(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.NodeName, r.PublishMethod, r.StatusVersion)
+	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.NodeName, r.PublishMethod, r.StatusVersion).Scan(&lastInsertId)
 	if err != nil {
-		return err
-	}
-
-	lastInsertId, err = res.LastInsertId()
-	if err != nil {
-		return err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	defer stmt.Close()
 	r.ID = int(lastInsertId)
+
+	return nil
+}
+
+type ErrorSendingEnvelope struct {
+	CreatedAt    int64        `json:"createdAt"`
+	Error        string       `json:"error"`
+	SentEnvelope SentEnvelope `json:"sentEnvelope"`
+}
+
+func (e *ErrorSendingEnvelope) put(db *sql.DB) error {
+	e.CreatedAt = time.Now().Unix()
+	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
+		topic, senderKeyUID, nodeName, publishMethod, statusVersion, error)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
+		RETURNING id;`)
+	if err != nil {
+		return err
+	}
+
+	lastInsertId := int64(0)
+	err = stmt.QueryRow(e.SentEnvelope.MessageHash, e.SentEnvelope.SentAt, e.CreatedAt, e.SentEnvelope.PubsubTopic, e.SentEnvelope.Topic, e.SentEnvelope.SenderKeyUID, e.SentEnvelope.NodeName, e.SentEnvelope.PublishMethod, e.SentEnvelope.StatusVersion, e.Error).Scan(&lastInsertId)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	defer stmt.Close()
+	e.SentEnvelope.ID = int(lastInsertId)
 
 	return nil
 }
