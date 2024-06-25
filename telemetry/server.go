@@ -41,6 +41,7 @@ func NewServer(db *sql.DB, logger *zap.Logger) *Server {
 
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
 	server.Router.HandleFunc("/received-messages", server.createReceivedMessages).Methods("POST")
+	server.Router.HandleFunc("/waku-metrics", server.createWakuTelemetry).Methods("POST")
 	server.Router.HandleFunc("/received-envelope", server.createReceivedEnvelope).Methods("POST")
 	server.Router.HandleFunc("/sent-envelope", server.createSentEnvelope).Methods("POST")
 	server.Router.HandleFunc("/update-envelope", server.updateEnvelope).Methods("POST")
@@ -349,7 +350,69 @@ func (s *Server) rateLimit(next http.Handler) http.Handler {
 	})
 }
 
+type ErrorDetail struct {
+	Error string `json:"Error"`
+}
+
+func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	var telemetryData []WakuTelemetryRequest
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&telemetryData); err != nil {
+		log.Println(err)
+		http.Error(w, "Failed to decode telemetry data", http.StatusBadRequest)
+		return
+	}
+
+	var errorDetails []map[string]ErrorDetail
+
+	for _, data := range telemetryData {
+		switch data.TelemetryType {
+		case LightPushFilter:
+			var pushFilter TelemetryPushFilter
+			if err := json.Unmarshal(*data.TelemetryData, &pushFilter); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error decoding lightpush/filter metric: %v", err)}})
+				continue
+			}
+			if err := pushFilter.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error saving lightpush/filter metric: %v", err)}})
+				continue
+			}
+		default:
+			errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Unknown waku telemetry type: %s", data.TelemetryType)}})
+		}
+	}
+
+	if len(errorDetails) > 0 {
+		log.Printf("Errors encountered: %v", errorDetails)
+		errorDetailsJSON, err := json.Marshal(errorDetails)
+		if err != nil {
+			s.logger.Error("failed to marshal error details", zap.Error(err))
+			http.Error(w, "Failed to process error details", http.StatusInternalServerError)
+			return
+		}
+		err = respondWithError(w, http.StatusInternalServerError, string(errorDetailsJSON))
+		if err != nil {
+			s.logger.Error("failed to respond", zap.Error(err))
+		}
+		return
+	}
+
+	err := respondWithJSON(w, http.StatusCreated, errorDetails)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf(
+		"%s\t%s\t%s",
+		r.Method,
+		r.RequestURI,
+		time.Since(start),
+	)
+}
+
 func (s *Server) Start(port int) {
 	s.logger.Info("Starting server", zap.Int("port", port))
+
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), s.Router))
 }
