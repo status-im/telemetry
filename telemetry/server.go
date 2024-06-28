@@ -60,11 +60,12 @@ func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 type TelemetryType string
 
 const (
-	ProtocolStatsMetric    TelemetryType = "ProtocolStats"
-	ReceivedEnvelopeMetric TelemetryType = "ReceivedEnvelope"
-	SentEnvelopeMetric     TelemetryType = "SentEnvelope"
-	UpdateEnvelopeMetric   TelemetryType = "UpdateEnvelope"
-	ReceivedMessagesMetric TelemetryType = "ReceivedMessages"
+	ProtocolStatsMetric        TelemetryType = "ProtocolStats"
+	ReceivedEnvelopeMetric     TelemetryType = "ReceivedEnvelope"
+	SentEnvelopeMetric         TelemetryType = "SentEnvelope"
+	UpdateEnvelopeMetric       TelemetryType = "UpdateEnvelope"
+	ReceivedMessagesMetric     TelemetryType = "ReceivedMessages"
+	ErrorSendingEnvelopeMetric TelemetryType = "ErrorSendingEnvelope"
 )
 
 type TelemetryRequest struct {
@@ -115,6 +116,16 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 			}
 			if err := envelope.put(s.DB); err != nil {
 				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving sent envelope: %v", err)})
+				continue
+			}
+		case ErrorSendingEnvelopeMetric:
+			var envelopeError ErrorSendingEnvelope
+			if err := json.Unmarshal(*data.TelemetryData, &envelopeError); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error decoding error sending envelope: %v", err)})
+				continue
+			}
+			if err := envelopeError.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving error sending envelope: %v", err)})
 				continue
 			}
 		default:

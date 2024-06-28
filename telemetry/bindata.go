@@ -7,6 +7,7 @@
 // 000005_pushed_envelope.up.sql (574B)
 // 000006_status_version.up.sql (198B)
 // 000007_waku_push_filter.up.sql (523B)
+// 000008_error_sending_envelope.up.sql (520B)
 // doc.go (73B)
 
 package telemetry
@@ -210,8 +211,28 @@ func _000007_waku_push_filterUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000007_waku_push_filter.up.sql", size: 523, mode: os.FileMode(0644), modTime: time.Unix(1719271502, 0)}
+	info := bindataFileInfo{name: "000007_waku_push_filter.up.sql", size: 523, mode: os.FileMode(0644), modTime: time.Unix(1719439508, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x5d, 0xa, 0x2c, 0x93, 0xa, 0x1f, 0xeb, 0x49, 0x60, 0xe2, 0x8, 0x46, 0xb5, 0x16, 0xa4, 0xa9, 0x7f, 0xec, 0xfb, 0xe1, 0xdc, 0x12, 0x15, 0x17, 0x1, 0x28, 0xa3, 0xca, 0xeb, 0x45, 0x81, 0x31}}
+	return a, nil
+}
+
+var __000008_error_sending_envelopeUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x91\xcf\x6a\x02\x31\x10\x87\xef\x3e\xc5\x1c\x77\x61\x2f\x6d\xf1\xd4\x53\xba\x4d\x6b\x70\x8d\x25\x89\xa2\x27\x59\xcd\xe0\x06\xdc\x64\x9b\x3f\x85\xbe\x7d\x61\x43\xa5\x95\x56\x4f\x61\xf8\x3e\x7e\x93\x99\xa9\x05\x25\x8a\x82\x22\x4f\x0d\x05\xf6\x02\x7c\xa9\x80\x6e\x98\x54\x12\xd0\x7b\xe7\x25\x5a\x6d\xec\x91\xda\x0f\x3c\xb9\x01\xa1\x98\x00\x00\x18\x0d\x92\x0a\x46\x1a\x78\x13\x6c\x41\xc4\x16\xe6\x74\x5b\x8d\xa8\xc7\x10\xda\x23\xce\xda\xd0\xc1\x9a\x88\x7a\x46\x44\x71\x3f\x9d\x96\x63\x32\x5f\x35\x4d\xd6\x02\xda\x48\x22\x30\xae\xe8\x2b\x15\x17\xf0\xe0\xb1\x8d\xa8\xff\xe5\xd1\x0d\xe6\x70\x2d\x7d\x48\x7b\x99\xf6\xea\x96\x16\xd0\x6a\xf4\x73\xfc\x5c\xb1\xe7\x6b\x9e\x75\x1a\x79\xdb\xe3\x8d\x96\x27\x13\xba\x05\xc6\xce\xe9\xef\x6a\xd7\x8f\x65\x36\xc6\x7d\x82\xa2\x1b\x75\xf9\x8d\xd8\xc6\x14\xd6\xe8\x83\x71\xf6\xdc\xe3\xe1\xae\xcc\xb8\x5e\x72\xa9\x04\x61\x5c\xfd\x79\x92\x5d\xb2\xe6\x3d\x21\xe4\xa7\xc8\x8b\xad\x7e\xde\xa1\xfa\x35\x68\x75\x1e\xa7\xca\x79\xe5\xa4\x7c\x9c\x7c\x05\x00\x00\xff\xff\xcd\xf7\x68\x14\x08\x02\x00\x00")
+
+func _000008_error_sending_envelopeUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000008_error_sending_envelopeUpSql,
+		"000008_error_sending_envelope.up.sql",
+	)
+}
+
+func _000008_error_sending_envelopeUpSql() (*asset, error) {
+	bytes, err := _000008_error_sending_envelopeUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000008_error_sending_envelope.up.sql", size: 520, mode: os.FileMode(0644), modTime: time.Unix(1719439508, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x3e, 0x41, 0xcc, 0x90, 0x99, 0x71, 0xc7, 0x9f, 0x5e, 0x8, 0x8a, 0x9b, 0xd8, 0x1a, 0x2d, 0xd4, 0xef, 0x60, 0x39, 0xab, 0x3f, 0x59, 0x99, 0x15, 0x17, 0x72, 0xac, 0xd7, 0x17, 0x6, 0xec, 0xa3}}
 	return a, nil
 }
 
@@ -326,14 +347,15 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"000001_message_type.up.sql":       _000001_message_typeUpSql,
-	"000002_bandwidth_protocol.up.sql": _000002_bandwidth_protocolUpSql,
-	"000003_index_truncate.up.sql":     _000003_index_truncateUpSql,
-	"000004_envelope.table.up.sql":     _000004_envelopeTableUpSql,
-	"000005_pushed_envelope.up.sql":    _000005_pushed_envelopeUpSql,
-	"000006_status_version.up.sql":     _000006_status_versionUpSql,
-	"000007_waku_push_filter.up.sql":   _000007_waku_push_filterUpSql,
-	"doc.go":                           docGo,
+	"000001_message_type.up.sql":           _000001_message_typeUpSql,
+	"000002_bandwidth_protocol.up.sql":     _000002_bandwidth_protocolUpSql,
+	"000003_index_truncate.up.sql":         _000003_index_truncateUpSql,
+	"000004_envelope.table.up.sql":         _000004_envelopeTableUpSql,
+	"000005_pushed_envelope.up.sql":        _000005_pushed_envelopeUpSql,
+	"000006_status_version.up.sql":         _000006_status_versionUpSql,
+	"000007_waku_push_filter.up.sql":       _000007_waku_push_filterUpSql,
+	"000008_error_sending_envelope.up.sql": _000008_error_sending_envelopeUpSql,
+	"doc.go":                               docGo,
 }
 
 // AssetDebug is true if the assets were built with the debug flag enabled.
@@ -382,14 +404,15 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"000001_message_type.up.sql":       {_000001_message_typeUpSql, map[string]*bintree{}},
-	"000002_bandwidth_protocol.up.sql": {_000002_bandwidth_protocolUpSql, map[string]*bintree{}},
-	"000003_index_truncate.up.sql":     {_000003_index_truncateUpSql, map[string]*bintree{}},
-	"000004_envelope.table.up.sql":     {_000004_envelopeTableUpSql, map[string]*bintree{}},
-	"000005_pushed_envelope.up.sql":    {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
-	"000006_status_version.up.sql":     {_000006_status_versionUpSql, map[string]*bintree{}},
-	"000007_waku_push_filter.up.sql":   {_000007_waku_push_filterUpSql, map[string]*bintree{}},
-	"doc.go":                           {docGo, map[string]*bintree{}},
+	"000001_message_type.up.sql":           {_000001_message_typeUpSql, map[string]*bintree{}},
+	"000002_bandwidth_protocol.up.sql":     {_000002_bandwidth_protocolUpSql, map[string]*bintree{}},
+	"000003_index_truncate.up.sql":         {_000003_index_truncateUpSql, map[string]*bintree{}},
+	"000004_envelope.table.up.sql":         {_000004_envelopeTableUpSql, map[string]*bintree{}},
+	"000005_pushed_envelope.up.sql":        {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
+	"000006_status_version.up.sql":         {_000006_status_versionUpSql, map[string]*bintree{}},
+	"000007_waku_push_filter.up.sql":       {_000007_waku_push_filterUpSql, map[string]*bintree{}},
+	"000008_error_sending_envelope.up.sql": {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
+	"doc.go":                               {docGo, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.
