@@ -8,6 +8,7 @@
 // 000006_status_version.up.sql (198B)
 // 000007_waku_push_filter.up.sql (523B)
 // 000008_error_sending_envelope.up.sql (520B)
+// 000009_peer_count.up.sql (357B)
 // doc.go (73B)
 
 package telemetry
@@ -231,8 +232,28 @@ func _000008_error_sending_envelopeUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000008_error_sending_envelope.up.sql", size: 520, mode: os.FileMode(0644), modTime: time.Unix(1719439508, 0)}
+	info := bindataFileInfo{name: "000008_error_sending_envelope.up.sql", size: 520, mode: os.FileMode(0644), modTime: time.Unix(1719878840, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x3e, 0x41, 0xcc, 0x90, 0x99, 0x71, 0xc7, 0x9f, 0x5e, 0x8, 0x8a, 0x9b, 0xd8, 0x1a, 0x2d, 0xd4, 0xef, 0x60, 0x39, 0xab, 0x3f, 0x59, 0x99, 0x15, 0x17, 0x72, 0xac, 0xd7, 0x17, 0x6, 0xec, 0xa3}}
+	return a, nil
+}
+
+var __000009_peer_countUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x7c\x8e\x31\x4f\xc3\x30\x10\x46\xf7\xfc\x8a\x6f\x4c\xa4\x2c\x80\x3a\x31\x1d\xd1\x01\x56\x83\x8b\x2e\x6e\x45\x27\x14\x91\x1b\x3c\xc4\x29\xb1\x3d\xf0\xef\x91\x1a\x29\x05\xa9\x30\xdd\xf0\x4e\xdf\x7b\x8d\x30\x39\x86\xa3\x87\x96\x61\x1e\x61\x77\x0e\xfc\x66\x3a\xd7\xe1\xa4\x3a\x37\x53\x0e\x09\x65\x01\x00\x7e\x40\xc7\x62\xa8\xc5\xab\x98\x17\x92\x23\xb6\x7c\xac\xcf\xe8\x63\xd6\x3e\xe9\x40\x09\xc6\x3a\x7e\x62\x39\xef\xd8\x7d\xdb\x2e\xfc\x32\x75\x9d\x87\x69\x50\xdb\x8f\x8a\x03\x49\xf3\x4c\x52\xde\x6e\x36\xd5\x95\x9f\xad\x7e\xed\xfd\xf0\xdf\x57\xf2\xa3\xc6\xd4\x8f\xa7\x3f\x4c\x31\xf5\x29\xc7\x83\xce\xd1\x4f\x61\x1d\xba\xbb\xa9\x16\xdc\xec\x6c\xe7\x84\x8c\x75\x97\xe6\xf7\x1c\xfc\x67\x56\x2c\xa7\x5c\x0d\xf5\x9a\x5d\xff\x88\xab\x7f\x2b\xaa\xa2\xba\x2f\xbe\x03\x00\x00\xff\xff\xfa\x1d\x0e\x4f\x65\x01\x00\x00")
+
+func _000009_peer_countUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000009_peer_countUpSql,
+		"000009_peer_count.up.sql",
+	)
+}
+
+func _000009_peer_countUpSql() (*asset, error) {
+	bytes, err := _000009_peer_countUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000009_peer_count.up.sql", size: 357, mode: os.FileMode(0644), modTime: time.Unix(1719879186, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc4, 0xd, 0xd9, 0xb6, 0xe8, 0x4a, 0xc0, 0xfa, 0x9d, 0xec, 0x4b, 0x7f, 0xa7, 0xc4, 0x96, 0x14, 0x48, 0xb7, 0xc9, 0xf2, 0x3d, 0xa9, 0xbb, 0xf8, 0x48, 0x6d, 0xaa, 0x75, 0xa5, 0x35, 0x8b, 0x1f}}
 	return a, nil
 }
 
@@ -355,6 +376,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000006_status_version.up.sql":         _000006_status_versionUpSql,
 	"000007_waku_push_filter.up.sql":       _000007_waku_push_filterUpSql,
 	"000008_error_sending_envelope.up.sql": _000008_error_sending_envelopeUpSql,
+	"000009_peer_count.up.sql":             _000009_peer_countUpSql,
 	"doc.go":                               docGo,
 }
 
@@ -412,6 +434,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000006_status_version.up.sql":         {_000006_status_versionUpSql, map[string]*bintree{}},
 	"000007_waku_push_filter.up.sql":       {_000007_waku_push_filterUpSql, map[string]*bintree{}},
 	"000008_error_sending_envelope.up.sql": {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
+	"000009_peer_count.up.sql":             {_000009_peer_countUpSql, map[string]*bintree{}},
 	"doc.go":                               {docGo, map[string]*bintree{}},
 }}
 

@@ -66,6 +66,7 @@ const (
 	UpdateEnvelopeMetric       TelemetryType = "UpdateEnvelope"
 	ReceivedMessagesMetric     TelemetryType = "ReceivedMessages"
 	ErrorSendingEnvelopeMetric TelemetryType = "ErrorSendingEnvelope"
+	PeerCountMetric            TelemetryType = "PeerCount"
 )
 
 type TelemetryRequest struct {
@@ -126,6 +127,16 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 			}
 			if err := envelopeError.put(s.DB); err != nil {
 				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving error sending envelope: %v", err)})
+				continue
+			}
+		case PeerCountMetric:
+			var peerCount PeerCount
+			if err := json.Unmarshal(*data.TelemetryData, &peerCount); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error decoding peer count: %v", err)})
+				continue
+			}
+			if err := peerCount.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]interface{}{"Id": data.Id, "Error": fmt.Sprintf("Error saving peer count: %v", err)})
 				continue
 			}
 		default:
