@@ -11,12 +11,13 @@ type PeerCount struct {
 	Timestamp     int64  `json:"timestamp"`
 	NodeName      string `json:"nodeName"`
 	NodeKeyUid    string `json:"nodeKeyUid"`
+	PeerID        string `json:"peerId"`
 	PeerCount     int    `json:"peerCount"`
 	StatusVersion string `json:"statusVersion"`
 }
 
 func (r *PeerCount) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;")
 	if err != nil {
 		return err
 	}
@@ -25,7 +26,7 @@ func (r *PeerCount) put(db *sql.DB) error {
 
 	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
-	err = stmt.QueryRow(r.Timestamp, r.NodeName, r.NodeKeyUid, r.PeerCount, r.StatusVersion, r.CreatedAt).Scan(&lastInsertId)
+	err = stmt.QueryRow(r.Timestamp, r.NodeName, r.NodeKeyUid, r.PeerID, r.PeerCount, r.StatusVersion, r.CreatedAt).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
