@@ -9,6 +9,7 @@
 // 000007_waku_push_filter.up.sql (523B)
 // 000008_error_sending_envelope.up.sql (520B)
 // 000009_peer_count.up.sql (357B)
+// 000010_peer_id.up.sql (299B)
 // doc.go (73B)
 
 package telemetry
@@ -252,8 +253,28 @@ func _000009_peer_countUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000009_peer_count.up.sql", size: 357, mode: os.FileMode(0644), modTime: time.Unix(1719879186, 0)}
+	info := bindataFileInfo{name: "000009_peer_count.up.sql", size: 357, mode: os.FileMode(0644), modTime: time.Unix(1721073810, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc4, 0xd, 0xd9, 0xb6, 0xe8, 0x4a, 0xc0, 0xfa, 0x9d, 0xec, 0x4b, 0x7f, 0xa7, 0xc4, 0x96, 0x14, 0x48, 0xb7, 0xc9, 0xf2, 0x3d, 0xa9, 0xbb, 0xf8, 0x48, 0x6d, 0xaa, 0x75, 0xa5, 0x35, 0x8b, 0x1f}}
+	return a, nil
+}
+
+var __000010_peer_idUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\x28\x48\x4d\x2d\x4a\xce\x2f\xcd\x2b\x51\x70\x74\x71\x51\x70\xf6\xf7\x09\xf5\xf5\x03\x0b\x7a\xa6\x28\x84\x39\x06\x39\x7b\x38\x06\x69\x18\x99\x9a\x6a\x5a\x73\x21\xeb\x2a\x4a\x4d\x4e\xcd\x2c\x4b\x4d\xf1\x4d\x2d\x2e\x4e\x4c\x4f\x2d\x26\x4b\xb3\x6b\x5e\x59\x6a\x4e\x7e\x01\x89\xba\x8b\x53\xf3\x4a\xc8\xd3\x99\x5a\x54\x94\x5f\x14\x9c\x9a\x97\x92\x99\x97\x0e\x33\x81\x90\x01\x80\x00\x00\x00\xff\xff\xe7\xc8\x16\x4d\x2b\x01\x00\x00")
+
+func _000010_peer_idUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000010_peer_idUpSql,
+		"000010_peer_id.up.sql",
+	)
+}
+
+func _000010_peer_idUpSql() (*asset, error) {
+	bytes, err := _000010_peer_idUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000010_peer_id.up.sql", size: 299, mode: os.FileMode(0644), modTime: time.Unix(1721239825, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe9, 0x10, 0x44, 0x22, 0x38, 0xe7, 0xb0, 0xe1, 0xd2, 0x77, 0x25, 0xe, 0x66, 0xff, 0x39, 0xb1, 0xaa, 0x5d, 0xe1, 0xd3, 0x6b, 0x64, 0xe2, 0x4c, 0x60, 0x15, 0x6e, 0x86, 0xc8, 0x3f, 0xe2, 0x70}}
 	return a, nil
 }
 
@@ -377,6 +398,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000007_waku_push_filter.up.sql":       _000007_waku_push_filterUpSql,
 	"000008_error_sending_envelope.up.sql": _000008_error_sending_envelopeUpSql,
 	"000009_peer_count.up.sql":             _000009_peer_countUpSql,
+	"000010_peer_id.up.sql":                _000010_peer_idUpSql,
 	"doc.go":                               docGo,
 }
 
@@ -435,6 +457,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000007_waku_push_filter.up.sql":       {_000007_waku_push_filterUpSql, map[string]*bintree{}},
 	"000008_error_sending_envelope.up.sql": {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
 	"000009_peer_count.up.sql":             {_000009_peer_countUpSql, map[string]*bintree{}},
+	"000010_peer_id.up.sql":                {_000010_peer_idUpSql, map[string]*bintree{}},
 	"doc.go":                               {docGo, map[string]*bintree{}},
 }}
 
