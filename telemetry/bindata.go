@@ -10,6 +10,8 @@
 // 000008_error_sending_envelope.up.sql (520B)
 // 000009_peer_count.up.sql (357B)
 // 000010_peer_id.up.sql (299B)
+// 000011_waku_push_error.up.sql (369B)
+// 000012_waku_generic.up.sql (377B)
 // doc.go (73B)
 
 package telemetry
@@ -213,7 +215,7 @@ func _000007_waku_push_filterUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000007_waku_push_filter.up.sql", size: 523, mode: os.FileMode(0644), modTime: time.Unix(1719439508, 0)}
+	info := bindataFileInfo{name: "000007_waku_push_filter.up.sql", size: 523, mode: os.FileMode(0644), modTime: time.Unix(1721784848, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x5d, 0xa, 0x2c, 0x93, 0xa, 0x1f, 0xeb, 0x49, 0x60, 0xe2, 0x8, 0x46, 0xb5, 0x16, 0xa4, 0xa9, 0x7f, 0xec, 0xfb, 0xe1, 0xdc, 0x12, 0x15, 0x17, 0x1, 0x28, 0xa3, 0xca, 0xeb, 0x45, 0x81, 0x31}}
 	return a, nil
 }
@@ -273,8 +275,48 @@ func _000010_peer_idUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000010_peer_id.up.sql", size: 299, mode: os.FileMode(0644), modTime: time.Unix(1721239825, 0)}
+	info := bindataFileInfo{name: "000010_peer_id.up.sql", size: 299, mode: os.FileMode(0644), modTime: time.Unix(1721783961, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe9, 0x10, 0x44, 0x22, 0x38, 0xe7, 0xb0, 0xe1, 0xd2, 0x77, 0x25, 0xe, 0x66, 0xff, 0x39, 0xb1, 0xaa, 0x5d, 0xe1, 0xd3, 0x6b, 0x64, 0xe2, 0x4c, 0x60, 0x15, 0x6e, 0x86, 0xc8, 0x3f, 0xe2, 0x70}}
+	return a, nil
+}
+
+var __000011_waku_push_errorUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x90\xcd\x4a\xc4\x40\x10\x84\xcf\x99\xa7\xa8\x63\x02\x73\x12\xf6\xe4\x69\x0c\xa3\x0e\x66\x67\x97\xce\x28\xee\x49\xb2\x49\xa3\x41\xf2\xe3\xfc\xe0\xeb\x8b\x06\x24\x2b\xf1\xd4\x87\xaf\xba\xaa\xab\x4b\xd2\xca\x69\x38\x75\x53\x69\x98\x5b\xd8\x83\x83\x7e\x36\xb5\xab\xf1\xd9\xbc\xa7\x63\x0a\x6f\xda\xfb\xc9\x23\x17\x59\xdf\xa1\xd6\x64\x54\x85\x23\x99\xbd\xa2\x13\x1e\xf4\x49\x8a\x6c\x66\xf6\xa6\xc3\x93\xa2\xf2\x5e\x51\x7e\xb5\xdb\x15\x3f\x3e\xf6\xb1\xaa\xa4\xc8\xf8\x7b\x7f\xcf\x21\x34\xaf\xfc\xaf\x68\xf1\x20\x1e\xa6\x78\x29\x92\x22\x6b\xa7\x31\xf2\x18\xdd\x34\xf7\xed\x5f\x36\xa7\x73\x48\xe7\x4d\x14\xfb\x81\x43\x6c\x86\x19\xc6\x3a\x7d\xa7\x69\x9d\xd7\x7a\x6e\x22\x77\x2a\x6e\x40\x01\x00\xe5\xc1\xd6\x8e\x94\xb1\xee\xf2\x11\x2f\x69\xec\x3f\x12\x63\x19\xf9\x72\xb7\xc4\xba\xa4\xc4\x6f\xb4\xc4\xba\x58\x21\x8a\xeb\xaf\x00\x00\x00\xff\xff\x1f\x69\xe4\xd8\x71\x01\x00\x00")
+
+func _000011_waku_push_errorUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000011_waku_push_errorUpSql,
+		"000011_waku_push_error.up.sql",
+	)
+}
+
+func _000011_waku_push_errorUpSql() (*asset, error) {
+	bytes, err := _000011_waku_push_errorUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000011_waku_push_error.up.sql", size: 369, mode: os.FileMode(0644), modTime: time.Unix(1721863885, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x80, 0xd0, 0xf7, 0xb9, 0xd, 0xe6, 0xc8, 0x35, 0x3b, 0x4e, 0xc7, 0xf2, 0xfb, 0x1, 0x33, 0x65, 0x4b, 0x4c, 0xcd, 0x6a, 0x96, 0xd3, 0x13, 0x33, 0xcf, 0x15, 0xd5, 0x6f, 0xb, 0xb1, 0x7c, 0xa5}}
+	return a, nil
+}
+
+var __000012_waku_genericUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x90\xcd\x4a\x03\x31\x14\x85\xd7\xc9\x53\x9c\xe5\x0c\xcc\x4a\xe8\xca\x55\x1c\x63\x0d\x4e\x53\xc9\x44\xb1\x2b\x49\x33\x97\x12\x64\x7e\xcc\x24\x88\x6f\x2f\x3a\xa0\xb5\xb4\xab\xbb\xf8\x0e\xe7\x1e\xbe\xda\x48\x61\x25\xac\xb8\x69\x24\xd4\x1d\xf4\xd6\x42\xbe\xa8\xd6\xb6\xf8\x70\x6f\x79\x4d\x03\xc5\xe0\x51\x70\x16\x3a\xb4\xd2\x28\xd1\xe0\xd1\xa8\x8d\x30\x3b\x3c\xc8\x5d\xc5\xd9\x44\x14\x55\x87\x67\x61\xea\x7b\x61\x8a\xab\xd5\xaa\xfc\x69\xd1\x4f\x4d\x53\x71\xd6\x53\x8a\xc1\xdb\xcf\x89\x2e\x46\x38\xf3\xe3\x90\x68\x48\x76\x9c\x82\xff\x17\xfb\xee\xcf\xfb\x39\xef\xcf\xa2\xc3\xb2\xee\xd6\x25\x77\x8a\x28\xc6\x31\x6e\x68\x9e\xdd\x81\x4e\x18\x67\x29\xf4\x34\x27\xd7\x4f\x50\xda\xca\xb5\x34\xc7\x6b\x7c\x24\x97\xa8\x13\xe9\x0c\xe4\x00\x50\x6f\x75\x6b\x8d\x50\xda\x1e\x2b\x7a\xcd\x43\x78\xcf\x84\xe5\x14\xbf\x2f\x2a\xfc\x19\xa8\xb0\xc8\x2a\x79\x79\xfd\x15\x00\x00\xff\xff\x67\x23\xdf\xab\x79\x01\x00\x00")
+
+func _000012_waku_genericUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000012_waku_genericUpSql,
+		"000012_waku_generic.up.sql",
+	)
+}
+
+func _000012_waku_genericUpSql() (*asset, error) {
+	bytes, err := _000012_waku_genericUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000012_waku_generic.up.sql", size: 377, mode: os.FileMode(0644), modTime: time.Unix(1721853414, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x3e, 0x8a, 0x92, 0x6c, 0x8e, 0x54, 0x51, 0xd5, 0x8f, 0xc8, 0x39, 0xb9, 0xed, 0x75, 0xcd, 0xe8, 0x54, 0xba, 0xa6, 0xe1, 0x23, 0x80, 0x64, 0xa, 0x47, 0x1d, 0x5, 0x27, 0x3d, 0xff, 0x5, 0xc6}}
 	return a, nil
 }
 
@@ -399,6 +441,8 @@ var _bindata = map[string]func() (*asset, error){
 	"000008_error_sending_envelope.up.sql": _000008_error_sending_envelopeUpSql,
 	"000009_peer_count.up.sql":             _000009_peer_countUpSql,
 	"000010_peer_id.up.sql":                _000010_peer_idUpSql,
+	"000011_waku_push_error.up.sql":        _000011_waku_push_errorUpSql,
+	"000012_waku_generic.up.sql":           _000012_waku_genericUpSql,
 	"doc.go":                               docGo,
 }
 
@@ -458,6 +502,8 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000008_error_sending_envelope.up.sql": {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
 	"000009_peer_count.up.sql":             {_000009_peer_countUpSql, map[string]*bintree{}},
 	"000010_peer_id.up.sql":                {_000010_peer_idUpSql, map[string]*bintree{}},
+	"000011_waku_push_error.up.sql":        {_000011_waku_push_errorUpSql, map[string]*bintree{}},
+	"000012_waku_generic.up.sql":           {_000012_waku_genericUpSql, map[string]*bintree{}},
 	"doc.go":                               {docGo, map[string]*bintree{}},
 }}
 

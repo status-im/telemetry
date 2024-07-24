@@ -400,6 +400,26 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error saving lightpush/filter metric: %v", err)}})
 				continue
 			}
+		case LightPushError:
+			var pushError TelemetryPushError
+			if err := json.Unmarshal(*data.TelemetryData, &pushError); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error decoding lightpush error metric: %v", err)}})
+				continue
+			}
+			if err := pushError.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error saving lightpush error metric: %v", err)}})
+				continue
+			}
+		case Generic:
+			var pushGeneric TelemetryGeneric
+			if err := json.Unmarshal(*data.TelemetryData, &pushGeneric); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error decoding lightpush generic metric: %v", err)}})
+				continue
+			}
+			if err := pushGeneric.put(s.DB); err != nil {
+				errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Error saving lightpush generic metric: %v", err)}})
+				continue
+			}
 		default:
 			errorDetails = append(errorDetails, map[string]ErrorDetail{fmt.Sprintf("%d", data.Id): {Error: fmt.Sprintf("Unknown waku telemetry type: %s", data.TelemetryType)}})
 		}
