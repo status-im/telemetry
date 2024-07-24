@@ -13,9 +13,12 @@ type Metric struct {
 }
 
 type ProtocolStats struct {
-	PeerID string `json:"hostID"`
-	Relay  Metric `json:"relay"`
-	Store  Metric `json:"store"`
+	PeerID          string `json:"hostID"`
+	Relay           Metric `json:"relay"`
+	Store           Metric `json:"store"`
+	FilterPush      Metric `json:"filter-push"`
+	FilterSubscribe Metric `json:"filter-subscribe"`
+	Lightpush       Metric `json:"lightpush"`
 }
 
 func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric Metric) error {
@@ -48,6 +51,21 @@ func (r *ProtocolStats) put(db *sql.DB) error {
 	}
 
 	err = r.insertRate(db, "store", r.Store)
+	if err != nil {
+		return err
+	}
+
+	err = r.insertRate(db, "filter-push", r.FilterPush)
+	if err != nil {
+		return err
+	}
+
+	err = r.insertRate(db, "filter-subscribe", r.FilterSubscribe)
+	if err != nil {
+		return err
+	}
+
+	err = r.insertRate(db, "lightpush", r.Lightpush)
 	if err != nil {
 		return err
 	}
