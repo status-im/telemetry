@@ -76,7 +76,17 @@ func (rl *RateLimiter) RemoveIP(ip string) {
 }
 
 func (rl *RateLimiter) NumClients() int {
+	rl.lock.RLock()
+	defer rl.lock.RUnlock()
+
 	return len(rl.limiters.Values())
+}
+
+func (rl *RateLimiter) values() map[string]*Limiter {
+	rl.lock.RLock()
+	defer rl.lock.RUnlock()
+
+	return rl.limiters.Values()
 }
 
 func (rl *RateLimiter) cleanup(ctx context.Context, cleanupEvery time.Duration) {
@@ -89,7 +99,7 @@ func (rl *RateLimiter) cleanup(ctx context.Context, cleanupEvery time.Duration) 
 			return
 		case now := <-t.C:
 			numCleaned := 0
-			for ip, limiter := range rl.limiters.Values() {
+			for ip, limiter := range rl.values() {
 				if limiter.lastUsed.Add(2 * time.Second).Before(now) {
 					rl.RemoveIP(ip)
 					numCleaned++
