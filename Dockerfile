@@ -2,7 +2,7 @@ FROM golang:1.22-alpine3.19 AS builder
 
 # Create a non-root user
 RUN addgroup -g 1001 -S iamgroup && \
-    adduser -u 1001 -S iamuser -G iamgroup
+    adduser -u 1001 -S telemetry -G iamgroup
 
 WORKDIR /go/src/github.com/status-im/telemetry
 
@@ -36,7 +36,7 @@ COPY --from=builder /etc/passwd /etc/passwd
 # Copy the compiled application binary from the build stage to the final image
 COPY --from=builder /go/src/github.com/status-im/telemetry/build/server /usr/local/bin/telemetry
 
-USER iamuser
+USER telemetry
 
 EXPOSE 8080/tcp
 
