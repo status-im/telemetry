@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/robfig/cron/v3"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -42,5 +43,14 @@ func main() {
 	defer c.Stop()
 
 	server := telemetry.NewServer(db, logger)
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"https://lab.waku.org"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"*"},
+	})
+
+	server.Router.Use(corsHandler.Handler)
+
 	server.Start(*port)
 }
