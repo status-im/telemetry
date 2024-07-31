@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/status-im/dev-telemetry/telemetry"
 	"go.uber.org/zap"
 
 	"github.com/robfig/cron/v3"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -42,5 +44,14 @@ func main() {
 	defer c.Stop()
 
 	server := telemetry.NewServer(db, logger)
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"https://lab.waku.org"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"*"},
+	})
+
+	http.Handle("/", corsHandler.Handler(server.Handler()))
+
 	server.Start(*port)
 }
