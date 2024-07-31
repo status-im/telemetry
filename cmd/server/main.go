@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/status-im/dev-telemetry/telemetry"
@@ -51,7 +50,7 @@ func main() {
 		AllowedHeaders: []string{"*"},
 	})
 
-	http.Handle("/", corsHandler.Handler(server.Handler()))
+	server.Router.Use(corsHandler.Handler)
 
 	server.Start(*port)
 }
