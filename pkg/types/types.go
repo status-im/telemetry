@@ -30,6 +30,7 @@ type PeerCount struct {
 	PeerID        string `json:"peerId"`
 	PeerCount     int    `json:"peerCount"`
 	StatusVersion string `json:"statusVersion"`
+	DeviceType    string `json:"deviceType"`
 }
 
 type PeerConnFailure struct {
@@ -42,6 +43,7 @@ type PeerConnFailure struct {
 	StatusVersion string `json:"statusVersion"`
 	FailedPeerId  string `json:"failedPeerId"`
 	FailureCount  int    `json:"failureCount"`
+	DeviceType    string `json:"deviceType"`
 }
 
 type SentEnvelope struct {
@@ -57,12 +59,14 @@ type SentEnvelope struct {
 	ProcessingError string `json:"processingError"`
 	PublishMethod   string `json:"publishMethod"`
 	StatusVersion   string `json:"statusVersion"`
+	DeviceType      string `json:"deviceType"`
 }
 
 type ErrorSendingEnvelope struct {
 	CreatedAt    int64        `json:"createdAt"`
 	Error        string       `json:"error"`
 	SentEnvelope SentEnvelope `json:"sentEnvelope"`
+	DeviceType   string       `json:"deviceType"`
 }
 
 type ReceivedEnvelope struct {
@@ -77,6 +81,7 @@ type ReceivedEnvelope struct {
 	NodeName        string `json:"nodeName"`
 	ProcessingError string `json:"processingError"`
 	StatusVersion   string `json:"statusVersion"`
+	DeviceType      string `json:"deviceType"`
 }
 
 type Metric struct {
@@ -110,4 +115,5 @@ type ReceivedMessage struct {
 	PubsubTopic    string `json:"pubsubTopic"`
 	CreatedAt      int64  `json:"createdAt"`
 	StatusVersion  string `json:"statusVersion"`
+	DeviceType     string `json:"deviceType"`
 }

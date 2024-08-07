@@ -35,7 +35,7 @@ func (r *ReceivedMessage) process(db *sql.DB, errs *MetricErrors, data *types.Te
 }
 
 func (r *ReceivedMessage) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id;")
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,9 @@ func (r *ReceivedMessage) put(db *sql.DB) error {
 		r.data.MessageSize,
 		r.data.CreatedAt,
 		r.data.PubsubTopic,
-		r.data.StatusVersion).Scan(&lastInsertId)
+		r.data.StatusVersion,
+		r.data.DeviceType,
+	).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}

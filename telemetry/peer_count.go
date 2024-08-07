@@ -19,7 +19,7 @@ func (r *PeerCount) process(db *sql.DB, errs *MetricErrors, data *types.Telemetr
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
 	if err != nil {
 		return err
 	}
@@ -36,6 +36,7 @@ func (r *PeerCount) process(db *sql.DB, errs *MetricErrors, data *types.Telemetr
 		r.data.PeerCount,
 		r.data.StatusVersion,
 		r.data.CreatedAt,
+		r.data.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
@@ -56,7 +57,7 @@ func (r *PeerConnFailure) process(db *sql.DB, errs *MetricErrors, data *types.Te
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerConnFailure (timestamp, nodeName, nodeKeyUid, peerId, failedPeerId, failureCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO peerConnFailure (timestamp, nodeName, nodeKeyUid, peerId, failedPeerId, failureCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
 	if err != nil {
 		return err
 	}
@@ -74,6 +75,7 @@ func (r *PeerConnFailure) process(db *sql.DB, errs *MetricErrors, data *types.Te
 		r.data.FailureCount,
 		r.data.StatusVersion,
 		r.data.CreatedAt,
+		r.data.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))

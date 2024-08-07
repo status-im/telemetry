@@ -63,6 +63,11 @@ func dropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
+	_, err = db.Exec("DROP TABLE IF EXISTS peerconnfailure")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
 	_, err = db.Exec("DROP TABLE IF EXISTS errorsendingenvelope")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
