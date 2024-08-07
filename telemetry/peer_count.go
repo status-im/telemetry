@@ -2,21 +2,23 @@ package telemetry
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/status-im/dev-telemetry/pkg/types"
 )
 
 type PeerCount struct {
-	ID            int    `json:"id"`
-	CreatedAt     int64  `json:"createdAt"`
-	Timestamp     int64  `json:"timestamp"`
-	NodeName      string `json:"nodeName"`
-	NodeKeyUid    string `json:"nodeKeyUid"`
-	PeerID        string `json:"peerId"`
-	PeerCount     int    `json:"peerCount"`
-	StatusVersion string `json:"statusVersion"`
+	data types.PeerCount
 }
 
-func (r *PeerCount) put(db *sql.DB) error {
+func (r *PeerCount) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error decoding peer count: %v", err))
+		return err
+	}
+
 	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;")
 	if err != nil {
 		return err
@@ -24,30 +26,36 @@ func (r *PeerCount) put(db *sql.DB) error {
 
 	defer stmt.Close()
 
-	r.CreatedAt = time.Now().Unix()
+	r.data.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
-	err = stmt.QueryRow(r.Timestamp, r.NodeName, r.NodeKeyUid, r.PeerID, r.PeerCount, r.StatusVersion, r.CreatedAt).Scan(&lastInsertId)
+	err = stmt.QueryRow(
+		r.data.Timestamp,
+		r.data.NodeName,
+		r.data.NodeKeyUid,
+		r.data.PeerID,
+		r.data.PeerCount,
+		r.data.StatusVersion,
+		r.data.CreatedAt,
+	).Scan(&lastInsertId)
 	if err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
 		return err
 	}
-	r.ID = lastInsertId
+	r.data.ID = lastInsertId
 
 	return nil
 }
 
 type PeerConnFailure struct {
-	ID            int    `json:"id"`
-	CreatedAt     int64  `json:"createdAt"`
-	Timestamp     int64  `json:"timestamp"`
-	NodeName      string `json:"nodeName"`
-	NodeKeyUid    string `json:"nodeKeyUid"`
-	PeerId        string `json:"peerId"`
-	StatusVersion string `json:"statusVersion"`
-	FailedPeerId  string `json:"failedPeerId"`
-	FailureCount  int    `json:"failureCount"`
+	data types.PeerConnFailure
 }
 
-func (r *PeerConnFailure) put(db *sql.DB) error {
+func (r *PeerConnFailure) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error decoding peer connection failure: %v", err))
+		return err
+	}
+
 	stmt, err := db.Prepare("INSERT INTO peerConnFailure (timestamp, nodeName, nodeKeyUid, peerId, failedPeerId, failureCount, statusVersion, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
 	if err != nil {
 		return err
@@ -55,13 +63,23 @@ func (r *PeerConnFailure) put(db *sql.DB) error {
 
 	defer stmt.Close()
 
-	r.CreatedAt = time.Now().Unix()
+	r.data.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
-	err = stmt.QueryRow(r.Timestamp, r.NodeName, r.NodeKeyUid, r.PeerId, r.FailedPeerId, r.FailureCount, r.StatusVersion, r.CreatedAt).Scan(&lastInsertId)
+	err = stmt.QueryRow(
+		r.data.Timestamp,
+		r.data.NodeName,
+		r.data.NodeKeyUid,
+		r.data.PeerId,
+		r.data.FailedPeerId,
+		r.data.FailureCount,
+		r.data.StatusVersion,
+		r.data.CreatedAt,
+	).Scan(&lastInsertId)
 	if err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))
 		return err
 	}
-	r.ID = lastInsertId
+	r.data.ID = lastInsertId
 
 	return nil
 }
