@@ -18,13 +18,14 @@ type ReceivedEnvelope struct {
 	NodeName        string `json:"nodeName"`
 	ProcessingError string `json:"processingError"`
 	StatusVersion   string `json:"statusVersion"`
+	DeviceType      string `json:"deviceType"`
 }
 
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, receiverKeyUID, nodeName, processingError, statusVersion)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+							topic, receiverKeyUID, nodeName, processingError, statusVersion, deviceType)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -32,7 +33,7 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	}
 
 	lastInsertId := 0
-	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName, r.ProcessingError, r.StatusVersion).Scan(&lastInsertId)
+	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName, r.ProcessingError, r.StatusVersion, r.DeviceType).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
@@ -76,13 +77,14 @@ type SentEnvelope struct {
 	ProcessingError string `json:"processingError"`
 	PublishMethod   string `json:"publishMethod"`
 	StatusVersion   string `json:"statusVersion"`
+	DeviceType      string `json:"deviceType"`
 }
 
 func (r *SentEnvelope) put(db *sql.DB) error {
 	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -90,7 +92,7 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 	}
 
 	lastInsertId := int64(0)
-	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.PeerID, r.NodeName, r.PublishMethod, r.StatusVersion).Scan(&lastInsertId)
+	err = stmt.QueryRow(r.MessageHash, r.SentAt, r.CreatedAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.PeerID, r.NodeName, r.PublishMethod, r.StatusVersion, r.DeviceType).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
@@ -114,8 +116,8 @@ type ErrorSendingEnvelope struct {
 func (e *ErrorSendingEnvelope) put(db *sql.DB) error {
 	e.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
-		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType, error)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
 		RETURNING id;`)
 	if err != nil {
@@ -123,7 +125,7 @@ func (e *ErrorSendingEnvelope) put(db *sql.DB) error {
 	}
 
 	lastInsertId := int64(0)
-	err = stmt.QueryRow(e.SentEnvelope.MessageHash, e.SentEnvelope.SentAt, e.CreatedAt, e.SentEnvelope.PubsubTopic, e.SentEnvelope.Topic, e.SentEnvelope.SenderKeyUID, e.SentEnvelope.PeerID, e.SentEnvelope.NodeName, e.SentEnvelope.PublishMethod, e.SentEnvelope.StatusVersion, e.Error).Scan(&lastInsertId)
+	err = stmt.QueryRow(e.SentEnvelope.MessageHash, e.SentEnvelope.SentAt, e.CreatedAt, e.SentEnvelope.PubsubTopic, e.SentEnvelope.Topic, e.SentEnvelope.SenderKeyUID, e.SentEnvelope.PeerID, e.SentEnvelope.NodeName, e.SentEnvelope.PublishMethod, e.SentEnvelope.StatusVersion, e.SentEnvelope.DeviceType, e.Error).Scan(&lastInsertId)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
