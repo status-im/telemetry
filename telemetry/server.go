@@ -106,6 +106,12 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
+		case types.ReceivedMessagesMetric:
+			var receivedMessages ReceivedMessage
+			err := receivedMessages.process(s.DB, &errorDetails, &data)
+			if err != nil {
+				continue
+			}
 		default:
 			errorDetails.Append(data.Id, fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
 		}

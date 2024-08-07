@@ -94,3 +94,20 @@ type ProtocolStats struct {
 	FilterSubscribe Metric `json:"filter-subscribe"`
 	Lightpush       Metric `json:"lightpush"`
 }
+
+type ReceivedMessage struct {
+	ID             int    `json:"id"`
+	ChatID         string `json:"chatId"`
+	MessageHash    string `json:"messageHash"`
+	MessageID      string `json:"messageId"`
+	MessageType    string `json:"messageType"`
+	MessageSize    int    `json:"messageSize"`
+	ReceiverKeyUID string `json:"receiverKeyUID"`
+	PeerID         string `json:"peerId"`
+	NodeName       string `json:"nodeName"`
+	SentAt         int64  `json:"sentAt"`
+	Topic          string `json:"topic"`
+	PubsubTopic    string `json:"pubsubTopic"`
+	CreatedAt      int64  `json:"createdAt"`
+	StatusVersion  string `json:"statusVersion"`
+}
