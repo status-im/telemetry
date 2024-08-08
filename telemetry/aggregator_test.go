@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/status-im/dev-telemetry/pkg/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -97,11 +98,16 @@ func dropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
+	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessages_unique")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
 	db.Close()
 }
 
 func updateCreatedAt(db *sql.DB, m *ReceivedMessage) error {
-	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.CreatedAt, m.ID)
+	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.data.CreatedAt, m.data.ID)
 	return err
 }
 
@@ -134,38 +140,42 @@ func TestRunAggregatorSimple(t *testing.T) {
 	db := NewMock()
 	defer dropTables(db)
 
-	m := &ReceivedMessage{
+	mData := types.ReceivedMessage{
 		ChatID:         "1",
 		MessageHash:    "1",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
+
+	m := &ReceivedMessage{data: mData}
 	err := m.put(db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "2",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "3",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
+	m.data.CreatedAt = m.data.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
@@ -189,81 +199,88 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	db := NewMock()
 	defer dropTables(db)
 
-	m := &ReceivedMessage{
+	mData := types.ReceivedMessage{
 		ChatID:         "1",
 		MessageHash:    "1",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
+	m := &ReceivedMessage{data: mData}
 	err := m.put(db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "2",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
 
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "3",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "4",
 		ReceiverKeyUID: "1",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
+	m.data.CreatedAt = m.data.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "1",
 		MessageHash:    "1",
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
 
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "2",
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
 
-	m = &ReceivedMessage{
+	mData = types.ReceivedMessage{
 		ChatID:         "3",
 		MessageHash:    "4",
 		ReceiverKeyUID: "2",
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
+	m = &ReceivedMessage{data: mData}
 	err = m.put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
+	m.data.CreatedAt = m.data.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
