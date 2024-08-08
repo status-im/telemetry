@@ -66,59 +66,55 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var errorDetails MetricErrors
+	errorDetails := NewMetricErrors(s.logger)
 
 	for _, data := range telemetryData {
 		switch data.TelemetryType {
 		case types.ProtocolStatsMetric:
 			var stats ProtocolStats
-			err := stats.process(s.DB, &errorDetails, &data)
+			err := stats.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ReceivedEnvelopeMetric:
 			var envelope ReceivedEnvelope
-			err := envelope.process(s.DB, &errorDetails, &data)
+			err := envelope.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.SentEnvelopeMetric:
 			var envelope SentEnvelope
-			err := envelope.process(s.DB, &errorDetails, &data)
+			err := envelope.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ErrorSendingEnvelopeMetric:
 			var envelopeError ErrorSendingEnvelope
-			err := envelopeError.process(s.DB, &errorDetails, &data)
+			err := envelopeError.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.PeerCountMetric:
 			var peerCount PeerCount
-			err := peerCount.process(s.DB, &errorDetails, &data)
+			err := peerCount.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.PeerConnFailureMetric:
 			var peerConnFailure PeerConnFailure
-			err := peerConnFailure.process(s.DB, &errorDetails, &data)
+			err := peerConnFailure.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ReceivedMessagesMetric:
 			var receivedMessages ReceivedMessage
-			err := receivedMessages.process(s.DB, &errorDetails, &data)
+			err := receivedMessages.process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		default:
 			errorDetails.Append(data.Id, fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
 		}
-	}
-
-	if errorDetails.Len() > 0 {
-		log.Printf("Errors encountered: %v", errorDetails.Get())
 	}
 
 	err := respondWithJSON(w, http.StatusCreated, errorDetails.Get())
@@ -201,7 +197,7 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := respondWithJSON(w, http.StatusCreated, map[string]string{"error": ""})
+	err := respondWithJSON(w, http.StatusCreated, ErrorDetail{})
 	if err != nil {
 		s.logger.Error("failed to respond", zap.Error(err))
 		return
@@ -237,7 +233,7 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var errorDetails MetricErrors
+	errorDetails := NewMetricErrors(s.logger)
 
 	for _, data := range telemetryData {
 		switch data.TelemetryType {
@@ -277,7 +273,6 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if errorDetails.Len() > 0 {
-		log.Printf("Errors encountered: %v", errorDetails.Get())
 		errorDetailsJSON, err := json.Marshal(errorDetails.Get())
 		if err != nil {
 			s.logger.Error("failed to marshal error details", zap.Error(err))

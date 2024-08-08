@@ -1,6 +1,10 @@
 package telemetry
 
-import "sync"
+import (
+	"sync"
+
+	"go.uber.org/zap"
+)
 
 type ErrorDetail struct {
 	Id    int    `json:"id"`
@@ -8,11 +12,21 @@ type ErrorDetail struct {
 }
 
 type MetricErrors struct {
+	logger *zap.Logger
 	mutex  sync.Mutex
 	errors []ErrorDetail
 }
 
+func NewMetricErrors(logger *zap.Logger) *MetricErrors {
+	return &MetricErrors{
+		logger: logger,
+	}
+}
+
 func (me *MetricErrors) Append(id int, err string) {
+	if me.logger != nil {
+		me.logger.Error(err)
+	}
 	me.mutex.Lock()
 	defer me.mutex.Unlock()
 	me.errors = append(me.errors, ErrorDetail{Id: id, Error: err})
