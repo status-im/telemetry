@@ -1,9 +1,11 @@
 package telemetry
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
+	"github.com/status-im/dev-telemetry/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -11,7 +13,9 @@ func TestEnvelopesUpdate(t *testing.T) {
 	db := NewMock()
 	defer dropTables(db)
 
-	firstEnvelope := &ReceivedEnvelope{
+	var errs MetricErrors
+
+	firstEnvelopeData := types.ReceivedEnvelope{
 		MessageHash:    "1",
 		ReceiverKeyUID: "1",
 		NodeName:       "status",
@@ -19,10 +23,21 @@ func TestEnvelopesUpdate(t *testing.T) {
 		Topic:          "1",
 		PubsubTopic:    "1",
 	}
-	err := firstEnvelope.put(db)
+
+	data, err := json.Marshal(firstEnvelopeData)
 	require.NoError(t, err)
 
-	envelopeToUpdate := &ReceivedEnvelope{
+	telemetryRequest1 := types.TelemetryRequest{
+		Id:            0,
+		TelemetryType: types.ReceivedEnvelopeMetric,
+		TelemetryData: (*json.RawMessage)(&data),
+	}
+
+	var firstEnvelope ReceivedEnvelope
+	err = firstEnvelope.process(db, &errs, &telemetryRequest1)
+	require.NoError(t, err)
+
+	envelopeToUpdateData := types.ReceivedEnvelope{
 		MessageHash:     "1",
 		ReceiverKeyUID:  "1",
 		NodeName:        "status",
@@ -30,6 +45,9 @@ func TestEnvelopesUpdate(t *testing.T) {
 		Topic:           "1",
 		PubsubTopic:     "1",
 		ProcessingError: "MyError",
+	}
+	envelopeToUpdate := ReceivedEnvelope{
+		data: envelopeToUpdateData,
 	}
 
 	err = envelopeToUpdate.updateProcessingError(db)

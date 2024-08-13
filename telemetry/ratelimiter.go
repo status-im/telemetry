@@ -99,7 +99,8 @@ func (rl *RateLimiter) cleanup(ctx context.Context, cleanupEvery time.Duration) 
 			return
 		case now := <-t.C:
 			numCleaned := 0
-			for ip, limiter := range rl.values() {
+			limiters := rl.values()
+			for ip, limiter := range limiters {
 				if limiter.lastUsed.Add(2 * time.Second).Before(now) {
 					rl.RemoveIP(ip)
 					numCleaned++

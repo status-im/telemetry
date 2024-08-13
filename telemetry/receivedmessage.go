@@ -2,8 +2,11 @@ package telemetry
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/status-im/dev-telemetry/pkg/types"
 )
 
 type ReceivedMessageAggregated struct {
@@ -15,32 +18,62 @@ type ReceivedMessageAggregated struct {
 }
 
 type ReceivedMessage struct {
-	ID             int    `json:"id"`
-	ChatID         string `json:"chatId"`
-	MessageHash    string `json:"messageHash"`
-	MessageID      string `json:"messageId"`
-	MessageType    string `json:"messageType"`
-	MessageSize    int    `json:"messageSize"`
-	ReceiverKeyUID string `json:"receiverKeyUID"`
-	PeerID         string `json:"peerId"`
-	NodeName       string `json:"nodeName"`
-	SentAt         int64  `json:"sentAt"`
-	Topic          string `json:"topic"`
-	PubsubTopic    string `json:"pubsubTopic"`
-	CreatedAt      int64  `json:"createdAt"`
-	StatusVersion  string `json:"statusVersion"`
+	data types.ReceivedMessage
 }
 
-func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*ReceivedMessage, error) {
+func (r *ReceivedMessage) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error decoding received message failure: %v", err))
+		return err
+	}
+
+	if err := r.put(db); err != nil {
+		errs.Append(data.Id, fmt.Sprintf("Error saving received messages: %v", err))
+		return err
+	}
+	return nil
+}
+
+func (r *ReceivedMessage) put(db *sql.DB) error {
+	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id;")
+	if err != nil {
+		return err
+	}
+
+	r.data.CreatedAt = time.Now().Unix()
+	lastInsertId := 0
+	err = stmt.QueryRow(
+		r.data.ChatID,
+		r.data.MessageHash,
+		r.data.MessageID,
+		r.data.ReceiverKeyUID,
+		r.data.PeerID,
+		r.data.NodeName,
+		r.data.SentAt,
+		r.data.Topic,
+		r.data.MessageType,
+		r.data.MessageSize,
+		r.data.CreatedAt,
+		r.data.PubsubTopic,
+		r.data.StatusVersion).Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
+	r.data.ID = lastInsertId
+
+	return nil
+}
+
+func queryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*types.ReceivedMessage, error) {
 	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var receivedMessages []*ReceivedMessage
+	var receivedMessages []*types.ReceivedMessage
 	for rows.Next() {
-		var receivedMessage ReceivedMessage
+		var receivedMessage types.ReceivedMessage
 		err = rows.Scan(
 			&receivedMessage.ID,
 			&receivedMessage.ChatID,
@@ -88,23 +121,6 @@ func didReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	}
 
 	return afterCount > 0 && beforeCount > 0, nil
-}
-
-func (r *ReceivedMessage) put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id;")
-	if err != nil {
-		return err
-	}
-
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(r.ChatID, r.MessageHash, r.MessageID, r.ReceiverKeyUID, r.PeerID, r.NodeName, r.SentAt, r.Topic, r.MessageType, r.MessageSize, r.CreatedAt, r.PubsubTopic, r.StatusVersion).Scan(&lastInsertId)
-	if err != nil {
-		return err
-	}
-	r.ID = lastInsertId
-
-	return nil
 }
 
 func (r *ReceivedMessageAggregated) put(db *sql.DB) error {
