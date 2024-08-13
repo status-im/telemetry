@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/status-im/dev-telemetry/telemetry"
+	"github.com/status-im/telemetry/telemetry"
 	"go.uber.org/zap"
 
 	"github.com/robfig/cron/v3"

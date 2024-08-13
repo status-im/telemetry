@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/status-im/dev-telemetry/pkg/types"
+	"github.com/status-im/telemetry/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 

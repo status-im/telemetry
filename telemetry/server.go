@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/status-im/dev-telemetry/pkg/types"
+	"github.com/status-im/telemetry/pkg/types"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )

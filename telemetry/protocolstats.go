@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/status-im/dev-telemetry/pkg/types"
+	"github.com/status-im/telemetry/pkg/types"
 )
 
 type ProtocolStats struct {

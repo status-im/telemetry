@@ -1,4 +1,4 @@
-module github.com/status-im/dev-telemetry
+module github.com/status-im/telemetry
 
 go 1.20
 
