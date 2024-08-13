@@ -1,4 +1,4 @@
-package telemetry
+package database
 
 import (
 	"database/sql"
@@ -53,7 +53,7 @@ func OpenDb(dataSourceName string, logger *zap.Logger) *sql.DB {
 	}
 	logger.Info("Connected to database")
 
-	if err := createTables(db); err != nil {
+	if err := CreateTables(db); err != nil {
 		log.Fatalf("unable to create the table: %v", err)
 	}
 	logger.Info("DB initialized")
@@ -61,7 +61,7 @@ func OpenDb(dataSourceName string, logger *zap.Logger) *sql.DB {
 	return db
 }
 
-func createTables(db *sql.DB) error {
+func CreateTables(db *sql.DB) error {
 	sqlStmt := `CREATE TABLE IF NOT EXISTS receivedMessages (
 		id SERIAL PRIMARY KEY,
 		chatId VARCHAR(255) NOT NULL,

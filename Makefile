@@ -22,7 +22,7 @@ test: postgres
 	go test -v -failfast ./...
 
 generate:
-	go generate ./telemetry/sql
+	go generate ./lib/database/sql
 
 run: build postgres
 	./build/server --data-source-name=postgres://telemetry:newPassword@127.0.0.1:5432/telemetrydb?sslmode=disable

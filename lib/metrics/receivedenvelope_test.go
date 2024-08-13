@@ -1,19 +1,20 @@
-package telemetry
+package metrics
 
 import (
 	"encoding/json"
 	"testing"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEnvelopesUpdate(t *testing.T) {
-	db := NewMock()
-	defer dropTables(db)
+	db := common.NewMock()
+	defer common.DropTables(db)
 
-	var errs MetricErrors
+	var errs common.MetricErrors
 
 	firstEnvelopeData := types.ReceivedEnvelope{
 		MessageHash:    "1",
@@ -34,7 +35,7 @@ func TestEnvelopesUpdate(t *testing.T) {
 	}
 
 	var firstEnvelope ReceivedEnvelope
-	err = firstEnvelope.process(db, &errs, &telemetryRequest1)
+	err = firstEnvelope.Process(db, &errs, &telemetryRequest1)
 	require.NoError(t, err)
 
 	envelopeToUpdateData := types.ReceivedEnvelope{
@@ -47,10 +48,10 @@ func TestEnvelopesUpdate(t *testing.T) {
 		ProcessingError: "MyError",
 	}
 	envelopeToUpdate := ReceivedEnvelope{
-		data: envelopeToUpdateData,
+		envelopeToUpdateData,
 	}
 
-	err = envelopeToUpdate.updateProcessingError(db)
+	err = envelopeToUpdate.UpdateProcessingError(db)
 	require.NoError(t, err)
 
 	rows, err := db.Query("SELECT processingerror FROM receivedEnvelopes WHERE messagehash = '1';")

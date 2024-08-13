@@ -1,4 +1,4 @@
-package telemetry
+package metrics
 
 import (
 	"database/sql"
@@ -34,7 +34,7 @@ type TelemetryPushFilter struct {
 	CreatedAt      int64  `json:"createdAt"`
 }
 
-func (r *TelemetryPushFilter) put(db *sql.DB) error {
+func (r *TelemetryPushFilter) Put(db *sql.DB) error {
 	stmt, err := db.Prepare("INSERT INTO wakuPushFilter (peerIdSender, peerIdReporter, sequenceHash, sequenceTotal, sequenceIndex, contentTopic, pubsubTopic, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ type TelemetryPushError struct {
 	CreatedAt    int64  `json:"createdAt"`
 }
 
-func (r *TelemetryPushError) put(db *sql.DB) error {
+func (r *TelemetryPushError) Put(db *sql.DB) error {
 	stmt, err := db.Prepare("INSERT INTO wakuPushError (peerId, peerIdRemote, contentTopic, pubsubTopic, errorMessage, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;")
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ type TelemetryGeneric struct {
 	CreatedAt    int64  `json:"createdAt"`
 }
 
-func (r *TelemetryGeneric) put(db *sql.DB) error {
+func (r *TelemetryGeneric) Put(db *sql.DB) error {
 	stmt, err := db.Prepare("INSERT INTO wakuGeneric (peerId, metricType, contentTopic, pubsubTopic, genericData, errorMessage, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
 	if err != nil {
 		return err

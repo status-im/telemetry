@@ -1,4 +1,4 @@
-package telemetry
+package metrics
 
 import (
 	"database/sql"
@@ -7,15 +7,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
 )
 
 type ReceivedEnvelope struct {
-	data types.ReceivedEnvelope
+	types.ReceivedEnvelope
 }
 
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
-	r.data.CreatedAt = time.Now().Unix()
+	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
 							topic, receiverKeyUID, nodeName, processingError, statusVersion, deviceType)
 							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -27,16 +28,15 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		r.data.MessageHash,
-		r.data.SentAt,
-		r.data.CreatedAt,
-		r.data.PubsubTopic,
-		r.data.Topic,
-		r.data.ReceiverKeyUID,
-		r.data.NodeName,
-		r.data.ProcessingError,
-		r.data.StatusVersion,
-		r.data.DeviceType,
+		r.MessageHash,
+		r.SentAt,
+		r.CreatedAt,
+		r.PubsubTopic,
+		r.Topic,
+		r.ReceiverKeyUID,
+		r.NodeName,
+		r.ProcessingError,
+		r.StatusVersion,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -45,13 +45,13 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 			return err
 		}
 	}
-	r.data.ID = lastInsertId
+	r.ID = lastInsertId
 
 	return nil
 }
 
-func (r *ReceivedEnvelope) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
-	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+func (r *ReceivedEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding received envelope: %v", err))
 		return err
 	}
@@ -64,8 +64,8 @@ func (r *ReceivedEnvelope) process(db *sql.DB, errs *MetricErrors, data *types.T
 	return nil
 }
 
-func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
-	r.data.CreatedAt = time.Now().Unix()
+func (r *ReceivedEnvelope) UpdateProcessingError(db *sql.DB) error {
+	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`UPDATE receivedEnvelopes SET processingError=$1 WHERE
 							messageHash = $2 AND sentAt = $3 AND
 							pubsubTopic = $4 AND topic = $5 AND
@@ -74,7 +74,7 @@ func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
 		return err
 	}
 
-	_, err = stmt.Exec(r.data.ProcessingError, r.data.MessageHash, r.data.SentAt, r.data.PubsubTopic, r.data.Topic, r.data.ReceiverKeyUID, r.data.NodeName)
+	_, err = stmt.Exec(r.ProcessingError, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName)
 	if err != nil {
 		return err
 	}
@@ -83,11 +83,11 @@ func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
 }
 
 type SentEnvelope struct {
-	data types.SentEnvelope
+	types.SentEnvelope
 }
 
 func (r *SentEnvelope) put(db *sql.DB) error {
-	r.data.CreatedAt = time.Now().Unix()
+	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
 							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType)
 							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -99,17 +99,17 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		r.data.MessageHash,
-		r.data.SentAt,
-		r.data.CreatedAt,
-		r.data.PubsubTopic,
-		r.data.Topic,
-		r.data.SenderKeyUID,
-		r.data.PeerID,
-		r.data.NodeName,
-		r.data.PublishMethod,
-		r.data.StatusVersion,
-		r.data.DeviceType,
+		r.MessageHash,
+		r.SentAt,
+		r.CreatedAt,
+		r.PubsubTopic,
+		r.Topic,
+		r.SenderKeyUID,
+		r.PeerID,
+		r.NodeName,
+		r.PublishMethod,
+		r.StatusVersion,
+		r.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -120,12 +120,12 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 	}
 
 	defer stmt.Close()
-	r.data.ID = int(lastInsertId)
+	r.ID = int(lastInsertId)
 
 	return nil
 }
-func (r *SentEnvelope) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
-	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+func (r *SentEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding sent envelope: %v", err))
 		return err
 	}
@@ -138,16 +138,16 @@ func (r *SentEnvelope) process(db *sql.DB, errs *MetricErrors, data *types.Telem
 }
 
 type ErrorSendingEnvelope struct {
-	data types.ErrorSendingEnvelope
+	types.ErrorSendingEnvelope
 }
 
-func (e *ErrorSendingEnvelope) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
+func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &e); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding error sending envelope: %v", err))
 		return err
 	}
 
-	e.data.CreatedAt = time.Now().Unix()
+	e.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
 		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error, deviceType)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -159,18 +159,18 @@ func (e *ErrorSendingEnvelope) process(db *sql.DB, errs *MetricErrors, data *typ
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		e.data.SentEnvelope.MessageHash,
-		e.data.SentEnvelope.SentAt,
-		e.data.CreatedAt,
-		e.data.SentEnvelope.PubsubTopic,
-		e.data.SentEnvelope.Topic,
-		e.data.SentEnvelope.SenderKeyUID,
-		e.data.SentEnvelope.PeerID,
-		e.data.SentEnvelope.NodeName,
-		e.data.SentEnvelope.PublishMethod,
-		e.data.SentEnvelope.StatusVersion,
-		e.data.Error,
-		e.data.DeviceType,
+		e.SentEnvelope.MessageHash,
+		e.SentEnvelope.SentAt,
+		e.CreatedAt,
+		e.SentEnvelope.PubsubTopic,
+		e.SentEnvelope.Topic,
+		e.SentEnvelope.SenderKeyUID,
+		e.SentEnvelope.PeerID,
+		e.SentEnvelope.NodeName,
+		e.SentEnvelope.PublishMethod,
+		e.SentEnvelope.StatusVersion,
+		e.Error,
+		e.DeviceType,
 	).Scan(&lastInsertId)
 
 	if err != nil {
@@ -183,7 +183,7 @@ func (e *ErrorSendingEnvelope) process(db *sql.DB, errs *MetricErrors, data *typ
 	}
 
 	defer stmt.Close()
-	e.data.SentEnvelope.ID = int(lastInsertId)
+	e.SentEnvelope.ID = int(lastInsertId)
 
 	return nil
 }

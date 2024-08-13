@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/status-im/telemetry/lib/database"
 	"github.com/status-im/telemetry/telemetry"
 	"go.uber.org/zap"
 
@@ -22,7 +23,7 @@ func main() {
 
 	flag.Parse()
 
-	db := telemetry.OpenDb(*dataSourceName, logger)
+	db := database.OpenDb(*dataSourceName, logger)
 	defer db.Close()
 
 	aggregator, err := telemetry.NewAggregator(db, logger)

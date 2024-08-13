@@ -1,4 +1,4 @@
-package telemetry
+package metrics
 
 import (
 	"database/sql"
@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
 )
 
 type ProtocolStats struct {
-	data types.ProtocolStats
+	types.ProtocolStats
 }
 
 func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric types.Metric) error {
@@ -18,7 +19,7 @@ func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric types
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(r.data.PeerID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
+	_, err = stmt.Exec(r.PeerID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
 	if err != nil {
 		return err
 	}
@@ -28,7 +29,7 @@ func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric types
 		return err
 	}
 
-	_, err = stmt.Exec(r.data.PeerID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
+	_, err = stmt.Exec(r.PeerID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
 	if err != nil {
 		return err
 	}
@@ -36,28 +37,28 @@ func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric types
 	return nil
 }
 
-func (r *ProtocolStats) put(db *sql.DB) error {
-	err := r.insertRate(db, "relay", r.data.Relay)
+func (r *ProtocolStats) Put(db *sql.DB) error {
+	err := r.insertRate(db, "relay", r.Relay)
 	if err != nil {
 		return err
 	}
 
-	err = r.insertRate(db, "store", r.data.Store)
+	err = r.insertRate(db, "store", r.Store)
 	if err != nil {
 		return err
 	}
 
-	err = r.insertRate(db, "filter-push", r.data.FilterPush)
+	err = r.insertRate(db, "filter-push", r.FilterPush)
 	if err != nil {
 		return err
 	}
 
-	err = r.insertRate(db, "filter-subscribe", r.data.FilterSubscribe)
+	err = r.insertRate(db, "filter-subscribe", r.FilterSubscribe)
 	if err != nil {
 		return err
 	}
 
-	err = r.insertRate(db, "lightpush", r.data.Lightpush)
+	err = r.insertRate(db, "lightpush", r.Lightpush)
 	if err != nil {
 		return err
 	}
@@ -65,13 +66,13 @@ func (r *ProtocolStats) put(db *sql.DB) error {
 	return nil
 }
 
-func (r *ProtocolStats) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) (err error) {
-	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+func (r *ProtocolStats) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) (err error) {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding protocol stats: %v", err))
 		return err
 	}
 
-	if err := r.put(db); err != nil {
+	if err := r.Put(db); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving protocol stats: %v", err))
 		return err
 	}

@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/status-im/telemetry/lib/common"
+	"github.com/status-im/telemetry/lib/metrics"
 	"github.com/status-im/telemetry/pkg/types"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
@@ -66,49 +68,49 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errorDetails := NewMetricErrors(s.logger)
+	errorDetails := common.NewMetricErrors(s.logger)
 
 	for _, data := range telemetryData {
 		switch data.TelemetryType {
 		case types.ProtocolStatsMetric:
-			var stats ProtocolStats
-			err := stats.process(s.DB, errorDetails, &data)
+			var stats metrics.ProtocolStats
+			err := stats.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ReceivedEnvelopeMetric:
-			var envelope ReceivedEnvelope
-			err := envelope.process(s.DB, errorDetails, &data)
+			var envelope metrics.ReceivedEnvelope
+			err := envelope.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.SentEnvelopeMetric:
-			var envelope SentEnvelope
-			err := envelope.process(s.DB, errorDetails, &data)
+			var envelope metrics.SentEnvelope
+			err := envelope.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ErrorSendingEnvelopeMetric:
-			var envelopeError ErrorSendingEnvelope
-			err := envelopeError.process(s.DB, errorDetails, &data)
+			var envelopeError metrics.ErrorSendingEnvelope
+			err := envelopeError.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.PeerCountMetric:
-			var peerCount PeerCount
-			err := peerCount.process(s.DB, errorDetails, &data)
+			var peerCount metrics.PeerCount
+			err := peerCount.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.PeerConnFailureMetric:
-			var peerConnFailure PeerConnFailure
-			err := peerConnFailure.process(s.DB, errorDetails, &data)
+			var peerConnFailure metrics.PeerConnFailure
+			err := peerConnFailure.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
 		case types.ReceivedMessagesMetric:
-			var receivedMessages ReceivedMessage
-			err := receivedMessages.process(s.DB, errorDetails, &data)
+			var receivedMessages metrics.ReceivedMessage
+			err := receivedMessages.Process(s.DB, errorDetails, &data)
 			if err != nil {
 				continue
 			}
@@ -117,7 +119,7 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := respondWithJSON(w, http.StatusCreated, errorDetails.Get())
+	err := common.RespondWithJSON(w, http.StatusCreated, errorDetails.Get())
 	if err != nil {
 		log.Println(err)
 	}
@@ -132,13 +134,13 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	var receivedEnvelope ReceivedEnvelope
+	var receivedEnvelope metrics.ReceivedEnvelope
 	decoder := json.NewDecoder(r.Body)
 	s.logger.Info("update envelope")
-	if err := decoder.Decode(&receivedEnvelope.data); err != nil {
+	if err := decoder.Decode(&receivedEnvelope); err != nil {
 		s.logger.Error("failed to decode envelope", zap.Error(err))
 
-		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		err := common.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
 			s.logger.Error("failed to respond", zap.Error(err))
 		}
@@ -146,17 +148,17 @@ func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	err := receivedEnvelope.updateProcessingError(s.DB)
+	err := receivedEnvelope.UpdateProcessingError(s.DB)
 	if err != nil {
 		s.logger.Error("could not update envelope", zap.Error(err), zap.Any("envelope", receivedEnvelope))
-		err := respondWithError(w, http.StatusBadRequest, "Could not update the envelope")
+		err := common.RespondWithError(w, http.StatusBadRequest, "Could not update the envelope")
 		if err != nil {
 			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
 
-	err = respondWithJSON(w, http.StatusCreated, receivedEnvelope)
+	err = common.RespondWithJSON(w, http.StatusCreated, receivedEnvelope)
 	if err != nil {
 		s.logger.Error("failed to respond", zap.Error(err))
 		return
@@ -172,12 +174,12 @@ func (s *Server) updateEnvelope(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	var protocolStats ProtocolStats
+	var protocolStats metrics.ProtocolStats
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&protocolStats.data); err != nil {
+	if err := decoder.Decode(&protocolStats); err != nil {
 		s.logger.Error("failed to decode protocol stats", zap.Error(err))
 
-		err := respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		err := common.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		if err != nil {
 			s.logger.Error("failed to respond", zap.Error(err))
 		}
@@ -185,19 +187,19 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	peerIDHash := sha256.Sum256([]byte(protocolStats.data.PeerID))
-	protocolStats.data.PeerID = hex.EncodeToString(peerIDHash[:])
+	peerIDHash := sha256.Sum256([]byte(protocolStats.PeerID))
+	protocolStats.PeerID = hex.EncodeToString(peerIDHash[:])
 
-	if err := protocolStats.put(s.DB); err != nil {
+	if err := protocolStats.Put(s.DB); err != nil {
 		s.logger.Error("failed to save protocol stats", zap.Error(err))
-		err := respondWithError(w, http.StatusInternalServerError, "Could not save protocol stats")
+		err := common.RespondWithError(w, http.StatusInternalServerError, "Could not save protocol stats")
 		if err != nil {
 			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
 
-	err := respondWithJSON(w, http.StatusCreated, ErrorDetail{})
+	err := common.RespondWithJSON(w, http.StatusCreated, common.ErrorDetail{})
 	if err != nil {
 		s.logger.Error("failed to respond", zap.Error(err))
 		return
@@ -225,7 +227,7 @@ func (s *Server) rateLimit(next http.Handler) http.Handler {
 
 func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	var telemetryData []WakuTelemetryRequest
+	var telemetryData []metrics.WakuTelemetryRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&telemetryData); err != nil {
 		log.Println(err)
@@ -233,37 +235,37 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errorDetails := NewMetricErrors(s.logger)
+	errorDetails := common.NewMetricErrors(s.logger)
 
 	for _, data := range telemetryData {
 		switch data.TelemetryType {
-		case LightPushFilter:
-			var pushFilter TelemetryPushFilter
+		case metrics.LightPushFilter:
+			var pushFilter metrics.TelemetryPushFilter
 			if err := json.Unmarshal(*data.TelemetryData, &pushFilter); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error decoding lightpush/filter metric: %v", err))
 				continue
 			}
-			if err := pushFilter.put(s.DB); err != nil {
+			if err := pushFilter.Put(s.DB); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush/filter metric: %v", err))
 				continue
 			}
-		case LightPushError:
-			var pushError TelemetryPushError
+		case metrics.LightPushError:
+			var pushError metrics.TelemetryPushError
 			if err := json.Unmarshal(*data.TelemetryData, &pushError); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error decoding lightpush error metric: %v", err))
 				continue
 			}
-			if err := pushError.put(s.DB); err != nil {
+			if err := pushError.Put(s.DB); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush error metric: %v", err))
 				continue
 			}
-		case Generic:
-			var pushGeneric TelemetryGeneric
+		case metrics.Generic:
+			var pushGeneric metrics.TelemetryGeneric
 			if err := json.Unmarshal(*data.TelemetryData, &pushGeneric); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error decoding lightpush generic metric: %v", err))
 				continue
 			}
-			if err := pushGeneric.put(s.DB); err != nil {
+			if err := pushGeneric.Put(s.DB); err != nil {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush generic metric: %v", err))
 				continue
 			}
@@ -279,14 +281,14 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to process error details", http.StatusInternalServerError)
 			return
 		}
-		err = respondWithError(w, http.StatusInternalServerError, string(errorDetailsJSON))
+		err = common.RespondWithError(w, http.StatusInternalServerError, string(errorDetailsJSON))
 		if err != nil {
 			s.logger.Error("failed to respond", zap.Error(err))
 		}
 		return
 	}
 
-	err := respondWithJSON(w, http.StatusCreated, errorDetails.Get())
+	err := common.RespondWithJSON(w, http.StatusCreated, errorDetails.Get())
 	if err != nil {
 		log.Println(err)
 	}
