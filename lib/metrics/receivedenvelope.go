@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
@@ -16,10 +15,15 @@ type ReceivedEnvelope struct {
 }
 
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
-	r.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, receiverKeyUID, nodeName, processingError, statusVersion, deviceType)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+
+	commonFieldsId, err := InsertCommonFields(db, r.data)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+							topic, receiverKeyUID, processingError)
+							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -28,16 +32,13 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		r.MessageHash,
-		r.SentAt,
-		r.CreatedAt,
-		r.PubsubTopic,
-		r.Topic,
-		r.ReceiverKeyUID,
-		r.NodeName,
-		r.ProcessingError,
-		r.StatusVersion,
-		r.DeviceType,
+		commonFieldsId,
+		r.data.MessageHash,
+		r.data.SentAt,
+		r.data.PubsubTopic,
+		r.data.Topic,
+		r.data.ReceiverKeyUID,
+		r.data.ProcessingError,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -71,15 +72,16 @@ func (r *ReceivedEnvelope) Clean(db *sql.DB, before int64) (int64, error) {
 
 func (r *ReceivedEnvelope) UpdateProcessingError(db *sql.DB) error {
 	r.CreatedAt = time.Now().Unix()
+func (r *ReceivedEnvelope) updateProcessingError(db *sql.DB) error {
 	stmt, err := db.Prepare(`UPDATE receivedEnvelopes SET processingError=$1 WHERE
 							messageHash = $2 AND sentAt = $3 AND
 							pubsubTopic = $4 AND topic = $5 AND
-							receiverKeyUID = $6 AND nodeName = $7;`)
+							receiverKeyUID = $6;`)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(r.ProcessingError, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName)
+	_, err = stmt.Exec(r.data.ProcessingError, r.data.MessageHash, r.data.SentAt, r.data.PubsubTopic, r.data.Topic, r.data.ReceiverKeyUID)
 	if err != nil {
 		return err
 	}
@@ -92,10 +94,15 @@ type SentEnvelope struct {
 }
 
 func (r *SentEnvelope) put(db *sql.DB) error {
-	r.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+	commonFieldsId, err := InsertCommonFields(db, r.data)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+							topic, senderKeyUID, publishMethod)
+							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -104,17 +111,13 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		r.MessageHash,
-		r.SentAt,
-		r.CreatedAt,
-		r.PubsubTopic,
-		r.Topic,
-		r.SenderKeyUID,
-		r.PeerID,
-		r.NodeName,
-		r.PublishMethod,
-		r.StatusVersion,
-		r.DeviceType,
+		commonFieldsId,
+		r.data.MessageHash,
+		r.data.SentAt,
+		r.data.PubsubTopic,
+		r.data.Topic,
+		r.data.SenderKeyUID,
+		r.data.PublishMethod,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -156,10 +159,14 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 		return err
 	}
 
-	e.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
-		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error, deviceType)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	commonFieldsId, err := InsertCommonFields(db, e.data.SentEnvelope)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (commonFieldsId, messageHash, sentAt, pubsubTopic,
+		topic, senderKeyUID, publishMethod, error)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
 		RETURNING id;`)
 	if err != nil {
@@ -168,18 +175,14 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		e.SentEnvelope.MessageHash,
-		e.SentEnvelope.SentAt,
-		e.CreatedAt,
-		e.SentEnvelope.PubsubTopic,
-		e.SentEnvelope.Topic,
-		e.SentEnvelope.SenderKeyUID,
-		e.SentEnvelope.PeerID,
-		e.SentEnvelope.NodeName,
-		e.SentEnvelope.PublishMethod,
-		e.SentEnvelope.StatusVersion,
-		e.Error,
-		e.DeviceType,
+		commonFieldsId,
+		e.data.SentEnvelope.MessageHash,
+		e.data.SentEnvelope.SentAt,
+		e.data.SentEnvelope.PubsubTopic,
+		e.data.SentEnvelope.Topic,
+		e.data.SentEnvelope.SenderKeyUID,
+		e.data.SentEnvelope.PublishMethod,
+		e.data.Error,
 	).Scan(&lastInsertId)
 
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
@@ -20,24 +19,26 @@ func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.T
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
+	commonFieldsId, err := InsertCommonFields(db, r.data)
 	if err != nil {
 		return err
 	}
 
-	defer stmt.Close()
+	peerCountStmt, err := db.Prepare(`
+		INSERT INTO peerCount (common_fields_id, nodeKeyUid, peerCount)
+		VALUES ($1, $2, $3)
+		RETURNING id;
+	`)
+	if err != nil {
+		return err
+	}
+	defer peerCountStmt.Close()
 
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(
-		r.Timestamp,
-		r.NodeName,
-		r.NodeKeyUid,
-		r.PeerID,
-		r.PeerCount.PeerCount, //Conflicting type name and field name
-		r.StatusVersion,
-		r.CreatedAt,
-		r.DeviceType,
+	var lastInsertId int
+	err = peerCountStmt.QueryRow(
+		commonFieldsId,
+		r.data.NodeKeyUid,
+		r.data.PeerCount,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
@@ -62,25 +63,24 @@ func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *t
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerConnFailure (timestamp, nodeName, nodeKeyUid, peerId, failedPeerId, failureCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
+	commonFieldsId, err := InsertCommonFields(db, r.data)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := db.Prepare("INSERT INTO peerConnFailure (common_fields_id, nodeKeyUid, failedPeerId, failureCount) VALUES ($1, $2, $3, $4) RETURNING id;")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		r.Timestamp,
-		r.NodeName,
-		r.NodeKeyUid,
-		r.PeerId,
-		r.FailedPeerId,
-		r.FailureCount,
-		r.StatusVersion,
-		r.CreatedAt,
-		r.DeviceType,
+		commonFieldsId,
+		r.data.NodeKeyUid,
+		r.data.FailedPeerId,
+		r.data.FailureCount,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))

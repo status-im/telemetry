@@ -82,8 +82,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.data.SentAt)
 	require.NoError(t, err)
 
 	logger, err := zap.NewDevelopment()
@@ -100,6 +99,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 	require.Equal(t, 1.0, res[0].Value)
 	require.Equal(t, "", res[1].ChatID)
 	require.Equal(t, 1.0, res[1].Value)
+
+	dropTables(db)
 }
 
 func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
@@ -151,8 +152,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.data.SentAt)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -187,8 +187,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.data.SentAt)
 	require.NoError(t, err)
 
 	logger, err := zap.NewDevelopment()

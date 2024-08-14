@@ -17,9 +17,11 @@ func TestEnvelopesUpdate(t *testing.T) {
 	var errs common.MetricErrors
 
 	firstEnvelopeData := types.ReceivedEnvelope{
+		CommonFields: types.CommonFields{
+			NodeName: "status",
+		},
 		MessageHash:    "1",
 		ReceiverKeyUID: "1",
-		NodeName:       "status",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 		PubsubTopic:    "1",
@@ -39,9 +41,11 @@ func TestEnvelopesUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	envelopeToUpdateData := types.ReceivedEnvelope{
+		CommonFields: types.CommonFields{
+			NodeName: "status",
+		},
 		MessageHash:     "1",
 		ReceiverKeyUID:  "1",
-		NodeName:        "status",
 		SentAt:          time.Now().Unix(),
 		Topic:           "1",
 		PubsubTopic:     "1",
