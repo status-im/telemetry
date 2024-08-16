@@ -79,3 +79,36 @@ func (r *ProtocolStats) Process(db *sql.DB, errs *common.MetricErrors, data *typ
 
 	return nil
 }
+
+func (r *ProtocolStats) Clean(db *sql.DB, before int64) (int64, error) { //FIXME
+	stmt, err := db.Prepare("DELETE FROM protocolStatsRate WHERE createdAt < $1")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(before)
+	if err != nil {
+		return 0, err
+	}
+
+	rows1, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	stmt2, err := db.Prepare("DELETE FROM protocolStatsTotals WHERE createdAt < $1")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result2, err := stmt2.Exec(time.Unix(before, 0))
+	if err != nil {
+		return 0, err
+	}
+
+	rows2, err := result2.RowsAffected()
+
+	return rows1 + rows2, err
+}

@@ -55,7 +55,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		Topic:          "1",
 	}
 
-	m := &metrics.ReceivedMessage{mData}
+	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err := m.Put(db)
 	require.NoError(t, err)
 
@@ -67,7 +67,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 
@@ -79,7 +79,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 	m.CreatedAt = m.SentAt
@@ -113,7 +113,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m := &metrics.ReceivedMessage{mData}
+	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err := m.Put(db)
 	require.NoError(t, err)
 
@@ -125,7 +125,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 
@@ -148,7 +148,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 	m.CreatedAt = m.SentAt
@@ -162,7 +162,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 
@@ -173,7 +173,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 
@@ -184,7 +184,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &metrics.ReceivedMessage{mData}
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
 	err = m.Put(db)
 	require.NoError(t, err)
 	m.CreatedAt = m.SentAt

@@ -25,7 +25,7 @@ generate:
 	go generate ./lib/database/sql
 
 run: build postgres
-	./build/server --data-source-name=postgres://telemetry:newPassword@127.0.0.1:5432/telemetrydb?sslmode=disable
+	./build/server --data-source-name=postgres://telemetry:newPassword@127.0.0.1:5432/telemetrydb?sslmode=disable $(EXTRA_ARGS)
 
 postgres:
 	docker inspect telemetry-postgres > /dev/null ||\

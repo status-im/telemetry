@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/status-im/telemetry/lib/database"
+	"github.com/status-im/telemetry/lib/metrics"
+	"github.com/status-im/telemetry/pkg/types"
 	"github.com/status-im/telemetry/telemetry"
 	"go.uber.org/zap"
 
@@ -20,6 +22,7 @@ func main() {
 	}
 	port := flag.Int("port", 8080, "Port number")
 	dataSourceName := flag.String("data-source-name", "", "DB URL")
+	retention := flag.Duration("retention", 0, "Duration of metrics retention")
 
 	flag.Parse()
 
@@ -43,7 +46,7 @@ func main() {
 	c.Start()
 	defer c.Stop()
 
-	server := telemetry.NewServer(db, logger)
+	server := telemetry.NewServer(db, logger, *retention)
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{"https://lab.waku.org"},
@@ -52,6 +55,14 @@ func main() {
 	})
 
 	server.Router.Use(corsHandler.Handler)
+
+	server.RegisterMetric(types.PeerCountMetric, &metrics.PeerCount{})
+	server.RegisterMetric(types.ErrorSendingEnvelopeMetric, &metrics.ErrorSendingEnvelope{})
+	server.RegisterMetric(types.PeerConnFailureMetric, &metrics.PeerConnFailure{})
+	server.RegisterMetric(types.ProtocolStatsMetric, &metrics.ProtocolStats{})
+	server.RegisterMetric(types.ReceivedEnvelopeMetric, &metrics.ReceivedEnvelope{})
+	server.RegisterMetric(types.ReceivedMessagesMetric, &metrics.ReceivedMessage{})
+	server.RegisterMetric(types.SentEnvelopeMetric, &metrics.SentEnvelope{})
 
 	server.Start(*port)
 }

@@ -35,6 +35,10 @@ func (r *ReceivedMessage) Process(db *sql.DB, errs *common.MetricErrors, data *t
 	return nil
 }
 
+func (r *ReceivedMessage) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "receivedMessages", before)
+}
+
 func (r *ReceivedMessage) Put(db *sql.DB) error {
 	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id;")
 	if err != nil {

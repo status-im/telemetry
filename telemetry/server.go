@@ -20,26 +20,31 @@ import (
 )
 
 const (
-	RATE_LIMIT = rate.Limit(10)
-	BURST      = 1
+	RATE_LIMIT         = rate.Limit(10)
+	BURST              = 1
+	CLEAN_UP_EXECUTION = 1 * time.Second * 24
 )
 
 type Server struct {
-	Router      *mux.Router
-	DB          *sql.DB
-	logger      *zap.Logger
-	rateLimiter RateLimiter
-	ctx         context.Context
+	Router           *mux.Router
+	DB               *sql.DB
+	logger           *zap.Logger
+	rateLimiter      RateLimiter
+	ctx              context.Context
+	metricsRetention time.Duration
+	metrics          map[types.TelemetryType]common.MetricProcessor
 }
 
-func NewServer(db *sql.DB, logger *zap.Logger) *Server {
+func NewServer(db *sql.DB, logger *zap.Logger, metricsRetention time.Duration) *Server {
 	ctx := context.Background()
 	server := &Server{
-		Router:      mux.NewRouter().StrictSlash(true),
-		DB:          db,
-		logger:      logger,
-		rateLimiter: *NewRateLimiter(ctx, RATE_LIMIT, BURST, logger),
-		ctx:         ctx,
+		Router:           mux.NewRouter().StrictSlash(true),
+		DB:               db,
+		logger:           logger,
+		rateLimiter:      *NewRateLimiter(ctx, RATE_LIMIT, BURST, logger),
+		ctx:              ctx,
+		metricsRetention: metricsRetention,
+		metrics:          make(map[types.TelemetryType]common.MetricProcessor),
 	}
 
 	server.Router.HandleFunc("/protocol-stats", server.createProtocolStats).Methods("POST")
@@ -58,6 +63,36 @@ func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "OK")
 }
 
+func (s *Server) RegisterMetric(t types.TelemetryType, metric common.MetricProcessor) {
+	s.metrics[t] = metric
+}
+
+func (s *Server) cleanup() {
+	if s.metricsRetention == 0 {
+		s.logger.Info("Retention set to 0, exiting the cleanup loop")
+		return
+	}
+
+	ticker := time.NewTicker(CLEAN_UP_EXECUTION) // FIXME
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-ticker.C:
+			for name, metric := range s.metrics {
+				rows, err := metric.Clean(s.DB, int64(time.Now().Add(-s.metricsRetention).Unix()))
+				if err != nil {
+					s.logger.Error("Failed to clean up a metric", zap.String("metric", string(name)), zap.Error(err))
+					continue
+				}
+				s.logger.Info("Cleaned up a metric", zap.String("metric", string(name)), zap.Int64("removed", rows))
+			}
+		}
+	}
+}
+
 func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	var telemetryData []types.TelemetryRequest
@@ -71,51 +106,16 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 	errorDetails := common.NewMetricErrors(s.logger)
 
 	for _, data := range telemetryData {
-		switch data.TelemetryType {
-		case types.ProtocolStatsMetric:
-			var stats metrics.ProtocolStats
-			err := stats.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.ReceivedEnvelopeMetric:
-			var envelope metrics.ReceivedEnvelope
-			err := envelope.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.SentEnvelopeMetric:
-			var envelope metrics.SentEnvelope
-			err := envelope.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.ErrorSendingEnvelopeMetric:
-			var envelopeError metrics.ErrorSendingEnvelope
-			err := envelopeError.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.PeerCountMetric:
-			var peerCount metrics.PeerCount
-			err := peerCount.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.PeerConnFailureMetric:
-			var peerConnFailure metrics.PeerConnFailure
-			err := peerConnFailure.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		case types.ReceivedMessagesMetric:
-			var receivedMessages metrics.ReceivedMessage
-			err := receivedMessages.Process(s.DB, errorDetails, &data)
-			if err != nil {
-				continue
-			}
-		default:
-			errorDetails.Append(data.Id, fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
+		metric, ok := s.metrics[data.TelemetryType]
+		if !ok {
+			//errorDetails.Append(data.Id, fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
+			s.logger.Info(fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
+			continue
+		}
+
+		err := metric.Process(s.DB, errorDetails, &data)
+		if err != nil {
+			continue
 		}
 	}
 
@@ -303,6 +303,8 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Start(port int) {
 	s.logger.Info("Starting server", zap.Int("port", port))
+
+	go s.cleanup()
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), s.Router))
 }

@@ -64,6 +64,10 @@ func (r *ReceivedEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *
 	return nil
 }
 
+func (r *ReceivedEnvelope) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "receivedEnvelopes", before)
+}
+
 func (r *ReceivedEnvelope) UpdateProcessingError(db *sql.DB) error {
 	r.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`UPDATE receivedEnvelopes SET processingError=$1 WHERE
@@ -137,6 +141,10 @@ func (r *SentEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *type
 	return nil
 }
 
+func (r *SentEnvelope) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "sentEnvelopes", before)
+}
+
 type ErrorSendingEnvelope struct {
 	types.ErrorSendingEnvelope
 }
@@ -186,4 +194,8 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 	e.SentEnvelope.ID = int(lastInsertId)
 
 	return nil
+}
+
+func (r *ErrorSendingEnvelope) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "errorSendingEnvelope", before)
 }
