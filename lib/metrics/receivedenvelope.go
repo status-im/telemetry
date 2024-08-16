@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -15,13 +16,18 @@ type ReceivedEnvelope struct {
 }
 
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(db, r.data)
+	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO receivedEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
 							topic, receiverKeyUID, processingError)
 							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
@@ -49,6 +55,9 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	}
 	r.ID = lastInsertId
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
 
@@ -59,7 +68,7 @@ func (r *ReceivedEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *
 	}
 
 	if err := r.put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving received envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error saving received envelope: %v", err))
 		return err
 	}
 
@@ -94,13 +103,18 @@ type SentEnvelope struct {
 }
 
 func (r *SentEnvelope) put(db *sql.DB) error {
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(db, r.data)
+	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO sentEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
 							topic, senderKeyUID, publishMethod)
 							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
@@ -127,9 +141,11 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 		}
 	}
 
-	defer stmt.Close()
-	r.ID = int(lastInsertId)
+	r.data.ID = int(lastInsertId)
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
 func (r *SentEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
@@ -139,7 +155,7 @@ func (r *SentEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *type
 	}
 
 	if err := r.put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving sent envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error saving sent envelope: %v", err))
 		return err
 	}
 	return nil
@@ -155,16 +171,22 @@ type ErrorSendingEnvelope struct {
 
 func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &e); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding error sending envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding error sending envelope: %v", err))
 		return err
 	}
 
-	commonFieldsId, err := InsertCommonFields(db, e.data.SentEnvelope)
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	commonFieldsId, err := InsertCommonFields(tx, &e.data.SentEnvelope.CommonFields)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO errorSendingEnvelope (commonFieldsId, messageHash, sentAt, pubsubTopic,
 		topic, senderKeyUID, publishMethod, error)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
@@ -189,13 +211,17 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		} else {
-			errs.Append(data.Id, fmt.Sprintf("Error saving error sending envelope: %v", err))
+			errs.Append(data.ID, fmt.Sprintf("Error saving error sending envelope: %v", err))
 			return err
 		}
 	}
 
-	defer stmt.Close()
-	e.SentEnvelope.ID = int(lastInsertId)
+	e.data.SentEnvelope.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }

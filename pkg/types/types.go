@@ -16,7 +16,7 @@ const (
 )
 
 type TelemetryRequest struct {
-	Id            int              `json:"id"`
+	ID            int              `json:"id"`
 	TelemetryType TelemetryType    `json:"telemetry_type"`
 	TelemetryData *json.RawMessage `json:"telemetry_data"`
 }
@@ -28,33 +28,10 @@ type CommonFields struct {
 	DeviceType    string `json:"deviceType"`
 }
 
-func (c CommonFields) GetNodeName() string {
-	return c.NodeName
-}
-
-func (c CommonFields) GetPeerID() string {
-	return c.PeerID
-}
-
-func (c CommonFields) GetStatusVersion() string {
-	return c.StatusVersion
-}
-
-func (c CommonFields) GetDeviceType() string {
-	return c.DeviceType
-}
-
-type CommonFieldsAccessor interface {
-	GetNodeName() string
-	GetPeerID() string
-	GetStatusVersion() string
-	GetDeviceType() string
-}
-
 type PeerCount struct {
 	CommonFields
 	ID         int    `json:"id"`
-	NodeKeyUid string `json:"nodeKeyUid"`
+	NodeKeyUID string `json:"nodeKeyUID"`
 	PeerCount  int    `json:"peerCount"`
 	Timestamp  int64  `json:"timestamp"`
 }
@@ -62,7 +39,7 @@ type PeerCount struct {
 type PeerConnFailure struct {
 	CommonFields
 	ID           int    `json:"id"`
-	NodeKeyUid   string `json:"nodeKeyUid"`
+	NodeKeyUID   string `json:"nodeKeyUID"`
 	FailedPeerId string `json:"failedPeerId"`
 	FailureCount int    `json:"failureCount"`
 	Timestamp    int64  `json:"timestamp"`
@@ -81,7 +58,7 @@ type SentEnvelope struct {
 }
 
 type ErrorSendingEnvelope struct {
-	Id           int          `json:"id"`
+	ID           int          `json:"id"`
 	Error        string       `json:"error"`
 	SentEnvelope SentEnvelope `json:"sentEnvelope"`
 }

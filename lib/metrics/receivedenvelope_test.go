@@ -31,7 +31,7 @@ func TestEnvelopesUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	telemetryRequest1 := types.TelemetryRequest{
-		Id:            0,
+		ID:            0,
 		TelemetryType: types.ReceivedEnvelopeMetric,
 		TelemetryData: (*json.RawMessage)(&data),
 	}

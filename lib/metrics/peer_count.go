@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -19,12 +20,18 @@ func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.T
 		return err
 	}
 
-	commonFieldsId, err := InsertCommonFields(db, r.data)
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
 	if err != nil {
 		return err
 	}
 
-	peerCountStmt, err := db.Prepare(`
+	peerCountStmt, err := tx.Prepare(`
 		INSERT INTO peerCount (common_fields_id, nodeKeyUid, peerCount)
 		VALUES ($1, $2, $3)
 		RETURNING id;
@@ -32,19 +39,23 @@ func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.T
 	if err != nil {
 		return err
 	}
-	defer peerCountStmt.Close()
 
 	var lastInsertId int
 	err = peerCountStmt.QueryRow(
 		commonFieldsId,
-		r.data.NodeKeyUid,
+		r.data.NodeKeyUID,
 		r.data.PeerCount,
 	).Scan(&lastInsertId)
 	if err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer count: %v", err))
 		return err
 	}
 	r.ID = lastInsertId
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }
@@ -63,7 +74,13 @@ func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *t
 		return err
 	}
 
-	commonFieldsId, err := InsertCommonFields(db, r.data)
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
 	if err != nil {
 		return err
 	}
@@ -78,15 +95,20 @@ func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *t
 	lastInsertId := 0
 	err = stmt.QueryRow(
 		commonFieldsId,
-		r.data.NodeKeyUid,
+		r.data.NodeKeyUID,
 		r.data.FailedPeerId,
 		r.data.FailureCount,
 	).Scan(&lastInsertId)
 	if err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer connection failure: %v", err))
 		return err
 	}
 	r.ID = lastInsertId
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }

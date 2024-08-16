@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -40,14 +41,20 @@ func (r *ReceivedMessage) Clean(db *sql.DB, before int64) (int64, error) {
 }
 
 func (r *ReceivedMessage) Put(db *sql.DB) error {
-	commonFieldsId, err := InsertCommonFields(db, r.data)
+	tx, err := db.BeginTx(context.Background(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	if err != nil {
+		return fmt.Errorf("failed to insert common fields: %w", err)
 	}
 
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (commonFieldsId, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;")
+	stmt, err := tx.Prepare("INSERT INTO receivedMessages (commonFieldsId, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
 
 	lastInsertId := 0
@@ -68,11 +75,19 @@ func (r *ReceivedMessage) Put(db *sql.DB) error {
 	}
 	r.ID = lastInsertId
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
 
 func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*types.ReceivedMessage, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
+	rows, err := db.Query(`
+	SELECT rm.id, rm.chatId, rm.messageHash, rm.messageId, rm.receiverKeyUID, rm.sentAt, rm.topic, rm.messageType, rm.messageSize, rm.pubSubTopic,
+		   cf.nodeName, cf.peerId, cf.statusVersion, cf.deviceType
+	FROM receivedMessages rm
+	LEFT JOIN commonFields cf ON rm.commonFieldsId = cf.id
+	WHERE rm.sentAt BETWEEN $1 AND $2`, startsAt.Unix(), endsAt.Unix())
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +107,10 @@ func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 			&receivedMessage.MessageType,
 			&receivedMessage.MessageSize,
 			&receivedMessage.PubsubTopic,
+			&receivedMessage.NodeName,
+			&receivedMessage.PeerID,
+			&receivedMessage.StatusVersion,
+			&receivedMessage.DeviceType,
 		)
 		if err != nil {
 			return nil, err
@@ -106,7 +125,7 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	err := db.QueryRow(`
 		SELECT COUNT(*) 
 		FROM receivedMessages rm
-		JOIN commonFields cf ON rm.id = cf.id
+		JOIN commonFields cf ON rm.commonFieldsId = cf.id
 		WHERE rm.receiverKeyUID = $1 AND cf.createdAt > $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		after.Unix(),
@@ -120,7 +139,7 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	err = db.QueryRow(`
 		SELECT COUNT(*)
 		FROM receivedMessages rm
-		JOIN commonFields cf ON rm.id = cf.id
+		JOIN commonFields cf ON rm.commonFieldsId = cf.id
 		WHERE rm.receiverKeyUID = $1 AND cf.createdAt < $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		before.Unix(),
