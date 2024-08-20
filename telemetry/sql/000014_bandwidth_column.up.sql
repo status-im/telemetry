@@ -1,0 +1,3 @@
+ALTER TABLE protocolStatsTotals
+ALTER COLUMN totalIn TYPE BIGINT,
+ALTER COLUMN totalOut TYPE BIGINT;
