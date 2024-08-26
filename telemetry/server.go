@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	RATE_LIMIT         = rate.Limit(10)
-	BURST              = 1
-	CLEAN_UP_EXECUTION = 1 * time.Second * 24
+	rateLimit        = rate.Limit(10)
+	burst            = 1
+	cleanUpExecution = 1 * time.Hour * 24
 )
 
 type Server struct {
@@ -41,7 +41,7 @@ func NewServer(db *sql.DB, logger *zap.Logger, metricsRetention time.Duration) *
 		Router:           mux.NewRouter().StrictSlash(true),
 		DB:               db,
 		logger:           logger,
-		rateLimiter:      *NewRateLimiter(ctx, RATE_LIMIT, BURST, logger),
+		rateLimiter:      *NewRateLimiter(ctx, rateLimit, burst, logger),
 		ctx:              ctx,
 		metricsRetention: metricsRetention,
 		metrics:          make(map[types.TelemetryType]common.MetricProcessor),
@@ -73,14 +73,14 @@ func (s *Server) cleanup() {
 		return
 	}
 
-	ticker := time.NewTicker(CLEAN_UP_EXECUTION) // FIXME
-	defer ticker.Stop()
+	timer := time.NewTimer(cleanUpExecution)
+	defer timer.Stop()
 
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
-		case <-ticker.C:
+		case <-timer.C:
 			for name, metric := range s.metrics {
 				rows, err := metric.Clean(s.DB, int64(time.Now().Add(-s.metricsRetention).Unix()))
 				if err != nil {
@@ -89,6 +89,7 @@ func (s *Server) cleanup() {
 				}
 				s.logger.Info("Cleaned up a metric", zap.String("metric", string(name)), zap.Int64("removed", rows))
 			}
+			timer.Reset(cleanUpExecution)
 		}
 	}
 }
@@ -108,7 +109,6 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 	for _, data := range telemetryData {
 		metric, ok := s.metrics[data.TelemetryType]
 		if !ok {
-			//errorDetails.Append(data.Id, fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
 			s.logger.Info(fmt.Sprintf("Unknown telemetry type: %s", data.TelemetryType))
 			continue
 		}
