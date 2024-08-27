@@ -14,7 +14,6 @@ func NewMock() *sql.DB {
 	}
 
 	err = database.CreateTables(db)
-
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when migrating the db", err)
 	}
