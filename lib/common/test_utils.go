@@ -23,37 +23,41 @@ func NewMock() *sql.DB {
 }
 
 func DropTables(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS receivedMessages")
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = tx.Exec("DROP TABLE IF EXISTS receivedMessages")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
+	_, err = tx.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
+	_, err = tx.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS sentEnvelopes")
+	_, err = tx.Exec("DROP TABLE IF EXISTS sentEnvelopes")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsRate")
+	_, err = tx.Exec("DROP TABLE IF EXISTS protocolStatsRate")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsTotals")
+	_, err = tx.Exec("DROP TABLE IF EXISTS protocolStatsTotals")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS peercount")
+	_, err = tx.Exec("DROP TABLE IF EXISTS peercount")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
@@ -68,44 +72,49 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP TABLE IF EXISTS schema_migrations")
+	_, err = tx.Exec("DROP TABLE IF EXISTS schema_migrations")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
+	_, err = tx.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessageAggregated_runAt")
+	_, err = tx.Exec("DROP INDEX IF EXISTS receivedMessageAggregated_runAt")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsRate_idx1")
+	_, err = tx.Exec("DROP INDEX IF EXISTS protocolStatsRate_idx1")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsTotals_idx1")
+	_, err = tx.Exec("DROP INDEX IF EXISTS protocolStatsTotals_idx1")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS peerCount_unique")
+	_, err = tx.Exec("DROP INDEX IF EXISTS peerCount_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessages_unique")
+	_, err = tx.Exec("DROP INDEX IF EXISTS receivedMessages_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = db.Exec("DROP INDEX IF EXISTS peerConnFailure_uniqu")
+	_, err = tx.Exec("DROP INDEX IF EXISTS peerConnFailure_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalf("Failed to commit the TX: %s", err)
 	}
 
 	db.Close()
