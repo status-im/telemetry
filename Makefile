@@ -19,7 +19,7 @@ lint:
 	@golangci-lint --exclude=SA1019 run ./... --deadline=5m
 
 test: postgres
-	go test -v -failfast ./...
+	go test -v -failfast -p=1 ./...
 
 generate:
 	go generate ./lib/database/sql

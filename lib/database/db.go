@@ -40,6 +40,7 @@ func migrateDB(resources *bindata.AssetSource, driver database.Driver) error {
 	if err = m.Up(); err != migrate.ErrNoChange {
 		return err
 	}
+
 	return nil
 }
 

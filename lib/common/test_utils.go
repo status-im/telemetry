@@ -71,11 +71,6 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
-	_, err = tx.Exec("DROP TABLE IF EXISTS schema_migrations")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
 	_, err = tx.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
@@ -111,10 +106,18 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
+	_, err = tx.Exec("DROP TABLE IF EXISTS schema_migrations")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		log.Fatalf("Failed to commit the TX: %s", err)
 	}
 
-	db.Close()
+	err = db.Close()
+	if err != nil {
+		log.Fatalf("failed to close db: %s", err)
+	}
 }
