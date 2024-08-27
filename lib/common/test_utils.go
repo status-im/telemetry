@@ -103,5 +103,10 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
+	_, err = db.Exec("DROP INDEX IF EXISTS peerConnFailure_uniqu")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
 	db.Close()
 }
