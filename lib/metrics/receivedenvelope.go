@@ -22,12 +22,12 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := tx.Prepare(`INSERT INTO receivedEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO receivedEnvelopes (recordId, messageHash, sentAt, pubsubTopic,
 							topic, receiverKeyUID, processingError)
 							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
@@ -38,7 +38,7 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		r.data.MessageHash,
 		r.data.SentAt,
 		r.data.PubsubTopic,
@@ -109,12 +109,12 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := tx.Prepare(`INSERT INTO sentEnvelopes (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO sentEnvelopes (recordId, messageHash, sentAt, pubsubTopic,
 							topic, senderKeyUID, publishMethod)
 							VALUES ($1, $2, $3, $4, $5, $6, $7)
 							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
@@ -125,7 +125,7 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		r.data.MessageHash,
 		r.data.SentAt,
 		r.data.PubsubTopic,
@@ -181,12 +181,12 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &e.data.SentEnvelope.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &e.data.SentEnvelope.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := tx.Prepare(`INSERT INTO errorSendingEnvelope (commonFieldsId, messageHash, sentAt, pubsubTopic,
+	stmt, err := tx.Prepare(`INSERT INTO errorSendingEnvelope (recordId, messageHash, sentAt, pubsubTopic,
 		topic, senderKeyUID, publishMethod, error)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
@@ -197,7 +197,7 @@ func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, da
 
 	lastInsertId := int64(0)
 	err = stmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		e.data.SentEnvelope.MessageHash,
 		e.data.SentEnvelope.SentAt,
 		e.data.SentEnvelope.PubsubTopic,

@@ -17,7 +17,7 @@ func TestEnvelopesUpdate(t *testing.T) {
 	var errs common.MetricErrors
 
 	firstEnvelopeData := types.ReceivedEnvelope{
-		CommonFields: types.CommonFields{
+		TelemetryRecord: types.TelemetryRecord{
 			NodeName: "status",
 		},
 		MessageHash:    "1",
@@ -41,7 +41,7 @@ func TestEnvelopesUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	envelopeToUpdateData := types.ReceivedEnvelope{
-		CommonFields: types.CommonFields{
+		TelemetryRecord: types.TelemetryRecord{
 			NodeName: "status",
 		},
 		MessageHash:     "1",

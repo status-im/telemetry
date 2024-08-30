@@ -21,7 +21,7 @@ type TelemetryRequest struct {
 	TelemetryData *json.RawMessage `json:"telemetry_data"`
 }
 
-type CommonFields struct {
+type TelemetryRecord struct {
 	NodeName      string `json:"nodeName"`
 	PeerID        string `json:"peerId"`
 	StatusVersion string `json:"statusVersion"`
@@ -29,7 +29,7 @@ type CommonFields struct {
 }
 
 type PeerCount struct {
-	CommonFields
+	TelemetryRecord
 	ID         int    `json:"id"`
 	NodeKeyUID string `json:"nodeKeyUID"`
 	PeerCount  int    `json:"peerCount"`
@@ -37,7 +37,7 @@ type PeerCount struct {
 }
 
 type PeerConnFailure struct {
-	CommonFields
+	TelemetryRecord
 	ID           int    `json:"id"`
 	NodeKeyUID   string `json:"nodeKeyUID"`
 	FailedPeerId string `json:"failedPeerId"`
@@ -46,7 +46,7 @@ type PeerConnFailure struct {
 }
 
 type SentEnvelope struct {
-	CommonFields
+	TelemetryRecord
 	ID              int    `json:"id"`
 	MessageHash     string `json:"messageHash"`
 	SentAt          int64  `json:"sentAt"`
@@ -64,7 +64,7 @@ type ErrorSendingEnvelope struct {
 }
 
 type ReceivedEnvelope struct {
-	CommonFields
+	TelemetryRecord
 	ID              int    `json:"id"`
 	SentAt          int64  `json:"sentAt"`
 	MessageHash     string `json:"messageHash"`
@@ -91,7 +91,7 @@ type ProtocolStats struct {
 }
 
 type ReceivedMessage struct {
-	CommonFields
+	TelemetryRecord
 	ID             int    `json:"id"`
 	ChatID         string `json:"chatId"`
 	MessageHash    string `json:"messageHash"`

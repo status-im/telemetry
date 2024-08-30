@@ -47,19 +47,19 @@ func (r *ReceivedMessage) Put(db *sql.DB) error {
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
 	if err != nil {
 		return fmt.Errorf("failed to insert common fields: %w", err)
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO receivedMessages (commonFieldsId, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;")
+	stmt, err := tx.Prepare("INSERT INTO receivedMessages (recordId, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;")
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
 
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		r.data.ChatID,
 		r.data.MessageHash,
 		r.data.MessageID,
@@ -86,7 +86,7 @@ func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 	SELECT rm.id, rm.chatId, rm.messageHash, rm.messageId, rm.receiverKeyUID, rm.sentAt, rm.topic, rm.messageType, rm.messageSize, rm.pubSubTopic,
 		   cf.nodeName, cf.peerId, cf.statusVersion, cf.deviceType
 	FROM receivedMessages rm
-	LEFT JOIN commonFields cf ON rm.commonFieldsId = cf.id
+	LEFT JOIN telemetryRecord cf ON rm.recordId = cf.id
 	WHERE rm.sentAt BETWEEN $1 AND $2`, startsAt.Unix(), endsAt.Unix())
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	err := db.QueryRow(`
 		SELECT COUNT(*) 
 		FROM receivedMessages rm
-		JOIN commonFields cf ON rm.commonFieldsId = cf.id
+		JOIN telemetryRecord cf ON rm.recordId = cf.id
 		WHERE rm.receiverKeyUID = $1 AND cf.createdAt > $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		after.Unix(),
@@ -139,7 +139,7 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	err = db.QueryRow(`
 		SELECT COUNT(*)
 		FROM receivedMessages rm
-		JOIN commonFields cf ON rm.commonFieldsId = cf.id
+		JOIN telemetryRecord cf ON rm.recordId = cf.id
 		WHERE rm.receiverKeyUID = $1 AND cf.createdAt < $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		before.Unix(),

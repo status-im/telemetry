@@ -26,7 +26,7 @@ func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.T
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.T
 
 	var lastInsertId int
 	err = peerCountStmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		r.data.NodeKeyUID,
 		r.data.PeerCount,
 	).Scan(&lastInsertId)
@@ -80,7 +80,7 @@ func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *t
 	}
 	defer tx.Rollback()
 
-	commonFieldsId, err := InsertCommonFields(tx, &r.data.CommonFields)
+	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *t
 
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		commonFieldsId,
+		recordId,
 		r.data.NodeKeyUID,
 		r.data.FailedPeerId,
 		r.data.FailureCount,

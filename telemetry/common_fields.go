@@ -6,9 +6,9 @@ import (
 	"github.com/status-im/telemetry/pkg/types"
 )
 
-func InsertCommonFields(tx *sql.Tx, data *types.CommonFields) (int, error) {
+func InsertTelemetryRecord(tx *sql.Tx, data *types.TelemetryRecord) (int, error) {
 	stmt, err := tx.Prepare(`
-		INSERT INTO commonFields (nodeName, peerId, statusVersion, deviceType)
+		INSERT INTO telemetryRecord (nodeName, peerId, statusVersion, deviceType)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id;
 	`)
@@ -16,16 +16,16 @@ func InsertCommonFields(tx *sql.Tx, data *types.CommonFields) (int, error) {
 		return 0, err
 	}
 
-	var commonFieldsId int
+	var recordId int
 	err = stmt.QueryRow(
 		data.NodeName,
 		data.PeerID,
 		data.StatusVersion,
 		data.DeviceType,
-	).Scan(&commonFieldsId)
+	).Scan(&recordId)
 	if err != nil {
 		return 0, err
 	}
 
-	return commonFieldsId, nil
+	return recordId, nil
 }
