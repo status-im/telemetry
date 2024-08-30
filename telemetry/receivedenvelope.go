@@ -17,8 +17,8 @@ type ReceivedEnvelope struct {
 func (r *ReceivedEnvelope) put(db *sql.DB) error {
 	r.data.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, receiverKeyUID, nodeName, processingError, statusVersion)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+							topic, receiverKeyUID, nodeName, processingError, statusVersion, deviceType)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -36,6 +36,7 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 		r.data.NodeName,
 		r.data.ProcessingError,
 		r.data.StatusVersion,
+		r.data.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -88,8 +89,8 @@ type SentEnvelope struct {
 func (r *SentEnvelope) put(db *sql.DB) error {
 	r.data.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
 							RETURNING id;`)
 	if err != nil {
@@ -108,6 +109,7 @@ func (r *SentEnvelope) put(db *sql.DB) error {
 		r.data.NodeName,
 		r.data.PublishMethod,
 		r.data.StatusVersion,
+		r.data.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -147,8 +149,8 @@ func (e *ErrorSendingEnvelope) process(db *sql.DB, errs *MetricErrors, data *typ
 
 	e.data.CreatedAt = time.Now().Unix()
 	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
-		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error, deviceType)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
 		RETURNING id;`)
 	if err != nil {
@@ -168,6 +170,7 @@ func (e *ErrorSendingEnvelope) process(db *sql.DB, errs *MetricErrors, data *typ
 		e.data.SentEnvelope.PublishMethod,
 		e.data.SentEnvelope.StatusVersion,
 		e.data.Error,
+		e.data.DeviceType,
 	).Scan(&lastInsertId)
 
 	if err != nil {
