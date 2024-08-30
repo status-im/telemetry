@@ -1,10 +1,10 @@
 -- Create telemetryRecord table
 CREATE TABLE IF NOT EXISTS telemetryRecord (
     id SERIAL PRIMARY KEY,
-    nodeName VARCHAR(255) NOT NULL,
-    peerId VARCHAR(255) NOT NULL,
-    statusVersion VARCHAR(255) NOT NULL,
-    deviceType VARCHAR(255) NOT NULL,
+    nodeName VARCHAR(255),
+    peerId VARCHAR(255),
+    statusVersion VARCHAR(255),
+    deviceType VARCHAR(255),
     createdAt INTEGER DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
 );
 
