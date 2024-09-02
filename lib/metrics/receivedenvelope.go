@@ -37,6 +37,7 @@ func (r *ReceivedEnvelope) put(db *sql.DB) error {
 		r.NodeName,
 		r.ProcessingError,
 		r.StatusVersion,
+		r.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
