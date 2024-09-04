@@ -43,6 +43,7 @@ func DropTables(db *sql.DB) {
 		"messageCheckSuccess",
 		"messageCheckFailure",
 		"dialFailure",
+		"storeconfirmationfailed",
 		"schema_migrations",
 	}
 
@@ -90,6 +91,11 @@ func DropTables(db *sql.DB) {
 	}
 
 	_, err = tx.Exec("DROP INDEX IF EXISTS peerCountByShard_unique")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = tx.Exec("DROP INDEX IF EXISTS storeConfirmationFailed_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}

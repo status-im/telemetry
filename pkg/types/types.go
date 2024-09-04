@@ -5,19 +5,20 @@ import "encoding/json"
 type TelemetryType string
 
 const (
-	ProtocolStatsMetric        TelemetryType = "ProtocolStats"
-	ReceivedEnvelopeMetric     TelemetryType = "ReceivedEnvelope"
-	SentEnvelopeMetric         TelemetryType = "SentEnvelope"
-	UpdateEnvelopeMetric       TelemetryType = "UpdateEnvelope"
-	ReceivedMessagesMetric     TelemetryType = "ReceivedMessages"
-	ErrorSendingEnvelopeMetric TelemetryType = "ErrorSendingEnvelope"
-	PeerCountMetric            TelemetryType = "PeerCount"
-	PeerConnFailureMetric      TelemetryType = "PeerConnFailure"
-	PeerCountByShardMetric     TelemetryType = "PeerCountByShard"
-	PeerCountByOriginMetric    TelemetryType = "PeerCountByOrigin"
-	MessageCheckSuccessMetric  TelemetryType = "MessageCheckSuccess"
-	MessageCheckFailureMetric  TelemetryType = "MessageCheckFailure"
-	DialFailureMetric          TelemetryType = "DialFailure"
+	ProtocolStatsMetric           TelemetryType = "ProtocolStats"
+	ReceivedEnvelopeMetric        TelemetryType = "ReceivedEnvelope"
+	SentEnvelopeMetric            TelemetryType = "SentEnvelope"
+	UpdateEnvelopeMetric          TelemetryType = "UpdateEnvelope"
+	ReceivedMessagesMetric        TelemetryType = "ReceivedMessages"
+	ErrorSendingEnvelopeMetric    TelemetryType = "ErrorSendingEnvelope"
+	PeerCountMetric               TelemetryType = "PeerCount"
+	PeerConnFailureMetric         TelemetryType = "PeerConnFailure"
+	PeerCountByShardMetric        TelemetryType = "PeerCountByShard"
+	PeerCountByOriginMetric       TelemetryType = "PeerCountByOrigin"
+	MessageCheckSuccessMetric     TelemetryType = "MessageCheckSuccess"
+	MessageCheckFailureMetric     TelemetryType = "MessageCheckFailure"
+	DialFailureMetric             TelemetryType = "DialFailure"
+	StoreConfirmationFailedMetric TelemetryType = "StoreConfirmationFailed"
 )
 
 type Origin int64
@@ -167,4 +168,10 @@ type DialFailure struct {
 	ErrorMsg  string        `json:"errorMsg"`
 	Protocols string        `json:"protocols"`
 	Timestamp int64         `json:"timestamp"`
+}
+type StoreConfirmationFailed struct {
+	TelemetryRecord
+	ID          int    `json:"id"`
+	MessageHash string `json:"messageHash"`
+	Timestamp   int64  `json:"timestamp"`
 }
