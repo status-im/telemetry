@@ -2,130 +2,32 @@ package telemetry
 
 import (
 	"database/sql"
-	"log"
 	"math"
 	"testing"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
+	"github.com/status-im/telemetry/lib/metrics"
 	"github.com/status-im/telemetry/pkg/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
-func NewMock() *sql.DB {
-	db, err := sql.Open("postgres", "postgres://telemetry:newPassword@127.0.0.1:5432/telemetrydb?sslmode=disable")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-
-	err = createTables(db)
-
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when migrating the db", err)
-	}
-
-	return db
-}
-
-func dropTables(db *sql.DB) {
-	_, err := db.Exec("DROP TABLE IF EXISTS receivedMessages")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS sentEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsRate")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS protocolStatsTotals")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS peercount")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS peerconnfailure")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS errorsendingenvelope")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS schema_migrations")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessageAggregated_runAt")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsRate_idx1")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS protocolStatsTotals_idx1")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS peerCount_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = db.Exec("DROP INDEX IF EXISTS receivedMessages_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	db.Close()
-}
-
-func updateCreatedAt(db *sql.DB, m *ReceivedMessage) error {
-	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.data.CreatedAt, m.data.ID)
+func updateCreatedAt(db *sql.DB, m *metrics.ReceivedMessage) error {
+	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.CreatedAt, m.ID)
 	return err
 }
 
-func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
+func queryAggregatedMessage(db *sql.DB) ([]*metrics.ReceivedMessageAggregated, error) {
 	rows, err := db.Query("SELECT * FROM receivedMessageAggregated")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var receivedMessageAggregateds []*ReceivedMessageAggregated
+	var receivedMessageAggregateds []*metrics.ReceivedMessageAggregated
 	for rows.Next() {
-		var receivedMessageAggregated ReceivedMessageAggregated
+		var receivedMessageAggregated metrics.ReceivedMessageAggregated
 		err = rows.Scan(
 			&receivedMessageAggregated.ID,
 			&receivedMessageAggregated.DurationInSeconds,
@@ -142,8 +44,8 @@ func queryAggregatedMessage(db *sql.DB) ([]*ReceivedMessageAggregated, error) {
 }
 
 func TestRunAggregatorSimple(t *testing.T) {
-	db := NewMock()
-	defer dropTables(db)
+	db := common.NewMock()
+	defer common.DropTables(db)
 
 	mData := types.ReceivedMessage{
 		ChatID:         "1",
@@ -153,8 +55,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 		Topic:          "1",
 	}
 
-	m := &ReceivedMessage{data: mData}
-	err := m.put(db)
+	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err := m.Put(db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
@@ -165,8 +67,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
@@ -177,10 +79,10 @@ func TestRunAggregatorSimple(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
-	m.data.CreatedAt = m.data.SentAt
+	m.CreatedAt = m.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
@@ -201,8 +103,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 }
 
 func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
-	db := NewMock()
-	defer dropTables(db)
+	db := common.NewMock()
+	defer common.DropTables(db)
 
 	mData := types.ReceivedMessage{
 		ChatID:         "1",
@@ -211,8 +113,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m := &ReceivedMessage{data: mData}
-	err := m.put(db)
+	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err := m.Put(db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
@@ -223,8 +125,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -234,8 +136,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
@@ -246,10 +148,10 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
-	m.data.CreatedAt = m.data.SentAt
+	m.CreatedAt = m.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 
@@ -260,8 +162,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -271,8 +173,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-oneHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -282,10 +184,10 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		SentAt:         time.Now().Add(-twoHourAndHalf).Unix(),
 		Topic:          "1",
 	}
-	m = &ReceivedMessage{data: mData}
-	err = m.put(db)
+	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
+	err = m.Put(db)
 	require.NoError(t, err)
-	m.data.CreatedAt = m.data.SentAt
+	m.CreatedAt = m.SentAt
 	err = updateCreatedAt(db, m)
 	require.NoError(t, err)
 

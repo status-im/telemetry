@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/status-im/telemetry/lib/metrics"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +30,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	startsAt := endsAt.Add(-d)
 
 	// Query all received message for a specific duration
-	receivedMessages, err := queryReceivedMessagesBetween(a.DB, startsAt, endsAt)
+	receivedMessages, err := metrics.QueryReceivedMessagesBetween(a.DB, startsAt, endsAt)
 	if err != nil {
 		a.logger.Fatal("could not query received message", zap.Error(err))
 	}
@@ -38,7 +39,7 @@ func (a *Aggregator) Run(d time.Duration) {
 	groupedMessages := make(map[string]map[string]int)
 	for _, receivedMessage := range receivedMessages {
 		// Skip receiver key uid if it has not been connected or was not in the chat after and before
-		ok, err := didReceivedMessageBeforeAndAfterInChat(
+		ok, err := metrics.DidReceivedMessageBeforeAndAfterInChat(
 			a.DB, receivedMessage.ReceiverKeyUID,
 			startsAt,
 			endsAt,
@@ -88,13 +89,13 @@ func (a *Aggregator) Run(d time.Duration) {
 
 	// Store all aggregation
 	for ChatID, rChatID := range rChatID {
-		rma := ReceivedMessageAggregated{
+		rma := metrics.ReceivedMessageAggregated{
 			ChatID:            ChatID,
 			DurationInSeconds: int64(d.Seconds()),
 			Value:             rChatID,
 			RunAt:             runAt.Unix(),
 		}
-		err := rma.put(a.DB)
+		err := rma.Put(a.DB)
 		if err != nil {
 			a.logger.Fatal("could not store received message aggregated", zap.Error(err))
 		}
@@ -108,13 +109,13 @@ func (a *Aggregator) Run(d time.Duration) {
 	}
 
 	r := rChatIDTotal / float64(len(rChatID))
-	rma := ReceivedMessageAggregated{
+	rma := metrics.ReceivedMessageAggregated{
 		ChatID:            "",
 		DurationInSeconds: int64(d.Seconds()),
 		Value:             r,
 		RunAt:             runAt.Unix(),
 	}
-	err = rma.put(a.DB)
+	err = rma.Put(a.DB)
 	if err != nil {
 		a.logger.Fatal("could not store received message aggregateds", zap.Error(err))
 	}

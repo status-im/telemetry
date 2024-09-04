@@ -1,4 +1,4 @@
-package telemetry
+package metrics
 
 import (
 	"database/sql"
@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
 )
 
 type PeerCount struct {
-	data types.PeerCount
+	types.PeerCount
 }
 
-func (r *PeerCount) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
-	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding peer count: %v", err))
 		return err
 	}
@@ -26,33 +27,37 @@ func (r *PeerCount) process(db *sql.DB, errs *MetricErrors, data *types.Telemetr
 
 	defer stmt.Close()
 
-	r.data.CreatedAt = time.Now().Unix()
+	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		r.data.Timestamp,
-		r.data.NodeName,
-		r.data.NodeKeyUid,
-		r.data.PeerID,
-		r.data.PeerCount,
-		r.data.StatusVersion,
-		r.data.CreatedAt,
-		r.data.DeviceType,
+		r.Timestamp,
+		r.NodeName,
+		r.NodeKeyUid,
+		r.PeerID,
+		r.PeerCount.PeerCount, //Conflicting type name and field name
+		r.StatusVersion,
+		r.CreatedAt,
+		r.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
 		return err
 	}
-	r.data.ID = lastInsertId
+	r.ID = lastInsertId
 
 	return nil
 }
 
-type PeerConnFailure struct {
-	data types.PeerConnFailure
+func (r *PeerCount) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "peerCount", before)
 }
 
-func (r *PeerConnFailure) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) error {
-	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
+type PeerConnFailure struct {
+	types.PeerConnFailure
+}
+
+func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error decoding peer connection failure: %v", err))
 		return err
 	}
@@ -64,24 +69,28 @@ func (r *PeerConnFailure) process(db *sql.DB, errs *MetricErrors, data *types.Te
 
 	defer stmt.Close()
 
-	r.data.CreatedAt = time.Now().Unix()
+	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
 	err = stmt.QueryRow(
-		r.data.Timestamp,
-		r.data.NodeName,
-		r.data.NodeKeyUid,
-		r.data.PeerId,
-		r.data.FailedPeerId,
-		r.data.FailureCount,
-		r.data.StatusVersion,
-		r.data.CreatedAt,
-		r.data.DeviceType,
+		r.Timestamp,
+		r.NodeName,
+		r.NodeKeyUid,
+		r.PeerId,
+		r.FailedPeerId,
+		r.FailureCount,
+		r.StatusVersion,
+		r.CreatedAt,
+		r.DeviceType,
 	).Scan(&lastInsertId)
 	if err != nil {
 		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))
 		return err
 	}
-	r.data.ID = lastInsertId
+	r.ID = lastInsertId
 
 	return nil
+}
+
+func (r *PeerConnFailure) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "peerConnFailure", before)
 }

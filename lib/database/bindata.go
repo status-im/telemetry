@@ -17,7 +17,7 @@
 // 000015_device_type.up.sql (383B)
 // doc.go (73B)
 
-package telemetry
+package database
 
 import (
 	"bytes"

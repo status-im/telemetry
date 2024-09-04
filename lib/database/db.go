@@ -1,7 +1,8 @@
-package telemetry
+package database
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -13,15 +14,15 @@ import (
 )
 
 // Migrate applies migrations.
-func Migrate(db *sql.DB, driver database.Driver) error {
-	return migrateDB(db, bindata.Resource(
+func Migrate(driver database.Driver) error {
+	return migrateDB(bindata.Resource(
 		AssetNames(),
 		Asset,
 	), driver)
 }
 
 // Migrate database using provided resources.
-func migrateDB(db *sql.DB, resources *bindata.AssetSource, driver database.Driver) error {
+func migrateDB(resources *bindata.AssetSource, driver database.Driver) error {
 	source, err := bindata.WithInstance(resources)
 	if err != nil {
 		return err
@@ -39,6 +40,7 @@ func migrateDB(db *sql.DB, resources *bindata.AssetSource, driver database.Drive
 	if err = m.Up(); err != migrate.ErrNoChange {
 		return err
 	}
+
 	return nil
 }
 
@@ -53,7 +55,7 @@ func OpenDb(dataSourceName string, logger *zap.Logger) *sql.DB {
 	}
 	logger.Info("Connected to database")
 
-	if err := createTables(db); err != nil {
+	if err := CreateTables(db); err != nil {
 		log.Fatalf("unable to create the table: %v", err)
 	}
 	logger.Info("DB initialized")
@@ -61,8 +63,8 @@ func OpenDb(dataSourceName string, logger *zap.Logger) *sql.DB {
 	return db
 }
 
-func createTables(db *sql.DB) error {
-	sqlStmt := `CREATE TABLE IF NOT EXISTS receivedMessages (
+func CreateTables(db *sql.DB) error {
+	sqlStmt := `CREATE TABLE IF NOT EXISTS receivedmessages (
 		id SERIAL PRIMARY KEY,
 		chatId VARCHAR(255) NOT NULL,
 		messageHash VARCHAR(255) NOT NULL,
@@ -75,9 +77,8 @@ func createTables(db *sql.DB) error {
 		constraint receivedMessages_unique unique(chatId, messageHash, receiverKeyUID, nodeName)
 	);`
 	_, err := db.Exec(sqlStmt)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create table: %s", err)
 	}
 
 	sqlStmt = `CREATE TABLE IF NOT EXISTS receivedMessageAggregated (
@@ -90,15 +91,15 @@ func createTables(db *sql.DB) error {
 
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create table: %s", err)
 	}
 
 	dbDriver, err := postgres.WithInstance(db, &postgres.Config{
 		MigrationsTable: postgres.DefaultMigrationsTable,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create dbDriver: %s", err)
 	}
 
-	return Migrate(db, dbDriver)
+	return Migrate(dbDriver)
 }
