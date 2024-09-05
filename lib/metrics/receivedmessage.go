@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -22,14 +23,14 @@ type ReceivedMessage struct {
 	types.ReceivedMessage
 }
 
-func (r *ReceivedMessage) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *ReceivedMessage) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding received message failure: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding received message failure: %v", err))
 		return err
 	}
 
-	if err := r.Put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving received messages: %v", err))
+	if err := r.Put(ctx, db); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving received messages: %v", err))
 		return err
 	}
 	return nil
@@ -39,40 +40,53 @@ func (r *ReceivedMessage) Clean(db *sql.DB, before int64) (int64, error) {
 	return common.Cleanup(db, "receivedMessages", before)
 }
 
-func (r *ReceivedMessage) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessages (chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic, statusVersion, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id;")
+func (r *ReceivedMessage) Put(ctx context.Context, db *sql.DB) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
+	if err != nil {
+		return fmt.Errorf("failed to insert common fields: %w", err)
 	}
 
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(
+	result := tx.QueryRow("INSERT INTO receivedMessages (recordId, chatId, messageHash, messageId, receiverKeyUID, sentAt, topic, messageType, messageSize, pubSubTopic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;",
+		recordId,
 		r.ChatID,
 		r.MessageHash,
 		r.MessageID,
 		r.ReceiverKeyUID,
-		r.PeerID,
-		r.NodeName,
 		r.SentAt,
 		r.Topic,
 		r.MessageType,
 		r.MessageSize,
-		r.CreatedAt,
-		r.PubsubTopic,
-		r.StatusVersion,
-		r.DeviceType,
-	).Scan(&lastInsertId)
-	if err != nil {
-		return err
+		r.PubsubTopic)
+	if result.Err() != nil {
+		return fmt.Errorf("failed to prepare statement: %w", result.Err())
 	}
-	r.ID = lastInsertId
 
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return fmt.Errorf("failed to get last insert id: %w", err)
+	}
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
 
 func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Time) ([]*types.ReceivedMessage, error) {
-	rows, err := db.Query(fmt.Sprintf("SELECT id, chatId, messageHash, messageId, receiverKeyUID, peerId, nodeName, sentAt, topic, messageType, messageSize, createdAt, pubSubTopic FROM receivedMessages WHERE sentAt BETWEEN %d and %d", startsAt.Unix(), endsAt.Unix()))
+	rows, err := db.Query(`
+	SELECT rm.id, rm.chatId, rm.messageHash, rm.messageId, rm.receiverKeyUID, rm.sentAt, rm.topic, rm.messageType, rm.messageSize, rm.pubSubTopic,
+		   cf.nodeName, cf.peerId, cf.statusVersion, cf.deviceType
+	FROM receivedMessages rm
+	LEFT JOIN telemetryRecord cf ON rm.recordId = cf.id
+	WHERE rm.sentAt BETWEEN $1 AND $2`, startsAt.Unix(), endsAt.Unix())
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +101,15 @@ func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 			&receivedMessage.MessageHash,
 			&receivedMessage.MessageID,
 			&receivedMessage.ReceiverKeyUID,
-			&receivedMessage.PeerID,
-			&receivedMessage.NodeName,
 			&receivedMessage.SentAt,
 			&receivedMessage.Topic,
 			&receivedMessage.MessageType,
 			&receivedMessage.MessageSize,
-			&receivedMessage.CreatedAt,
 			&receivedMessage.PubsubTopic,
+			&receivedMessage.NodeName,
+			&receivedMessage.PeerID,
+			&receivedMessage.StatusVersion,
+			&receivedMessage.DeviceType,
 		)
 		if err != nil {
 			return nil, err
@@ -106,8 +121,11 @@ func QueryReceivedMessagesBetween(db *sql.DB, startsAt time.Time, endsAt time.Ti
 
 func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string, before, after time.Time, chatId string) (bool, error) {
 	var afterCount int
-	err := db.QueryRow(
-		"SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt > $2 AND chatId = $3",
+	err := db.QueryRow(`
+		SELECT COUNT(*) 
+		FROM receivedMessages rm
+		JOIN telemetryRecord cf ON rm.recordId = cf.id
+		WHERE rm.receiverKeyUID = $1 AND cf.createdAt > $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		after.Unix(),
 		chatId,
@@ -117,8 +135,11 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 	}
 
 	var beforeCount int
-	err = db.QueryRow(
-		"SELECT COUNT(*) FROM receivedMessages WHERE receiverKeyUID = $1 AND createdAt < $2 AND chatId = $3",
+	err = db.QueryRow(`
+		SELECT COUNT(*)
+		FROM receivedMessages rm
+		JOIN telemetryRecord cf ON rm.recordId = cf.id
+		WHERE rm.receiverKeyUID = $1 AND cf.createdAt < $2 AND rm.chatId = $3`,
 		receiverPublicKey,
 		before.Unix(),
 		chatId,
@@ -131,17 +152,22 @@ func DidReceivedMessageBeforeAndAfterInChat(db *sql.DB, receiverPublicKey string
 }
 
 func (r *ReceivedMessageAggregated) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO receivedMessageAggregated (chatId, durationInSeconds, value, runAt) VALUES ($1, $2, $3, $4) RETURNING id;")
-	if err != nil {
-		return err
+	result := db.QueryRow("INSERT INTO receivedMessageAggregated (chatId, durationInSeconds, value, runAt) VALUES ($1, $2, $3, $4) RETURNING id;",
+		r.ChatID,
+		r.DurationInSeconds,
+		r.Value,
+		r.RunAt,
+	)
+	if result.Err() != nil {
+		return result.Err()
 	}
 
-	lastInsertId := 0
-	err = stmt.QueryRow(r.ChatID, r.DurationInSeconds, r.Value, r.RunAt).Scan(&lastInsertId)
+	var lastInsertId int
+	err := result.Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
-	r.ID = lastInsertId
+	r.ID = int(lastInsertId)
 
 	return nil
 }

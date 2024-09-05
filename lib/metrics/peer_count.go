@@ -1,10 +1,10 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
@@ -14,36 +14,44 @@ type PeerCount struct {
 	types.PeerCount
 }
 
-func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *PeerCount) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding peer count: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer count: %v", err))
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerCount (timestamp, nodeName, nodeKeyUid, peerId, peerCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	defer stmt.Close()
+	result := tx.QueryRow(`
+		INSERT INTO peerCount (recordId, nodeKeyUid, peerCount, timestamp)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id;
+	`, recordId, r.NodeKeyUID, r.PeerCount.PeerCount, r.PeerCount.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer count: %v", result.Err()))
+		return result.Err()
+	}
 
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(
-		r.Timestamp,
-		r.NodeName,
-		r.NodeKeyUid,
-		r.PeerID,
-		r.PeerCount.PeerCount, //Conflicting type name and field name
-		r.StatusVersion,
-		r.CreatedAt,
-		r.DeviceType,
-	).Scan(&lastInsertId)
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
 	if err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving peer count: %v", err))
 		return err
 	}
-	r.ID = lastInsertId
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }
@@ -56,37 +64,44 @@ type PeerConnFailure struct {
 	types.PeerConnFailure
 }
 
-func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *PeerConnFailure) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding peer connection failure: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer connection failure: %v", err))
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerConnFailure (timestamp, nodeName, nodeKeyUid, peerId, failedPeerId, failureCount, statusVersion, createdAt, deviceType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	defer stmt.Close()
+	result := tx.QueryRow(`
+		INSERT INTO peerConnFailure (recordId, nodeKeyUid, failedPeerId, failureCount, timestamp)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id;
+	`, recordId, r.NodeKeyUID, r.FailedPeerId, r.FailureCount, r.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer connection failure: %v", result.Err()))
+		return result.Err()
+	}
 
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(
-		r.Timestamp,
-		r.NodeName,
-		r.NodeKeyUid,
-		r.PeerId,
-		r.FailedPeerId,
-		r.FailureCount,
-		r.StatusVersion,
-		r.CreatedAt,
-		r.DeviceType,
-	).Scan(&lastInsertId)
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
 	if err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving peer connection failure: %v", err))
 		return err
 	}
-	r.ID = lastInsertId
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }

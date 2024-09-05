@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -15,21 +16,12 @@ type ProtocolStats struct {
 }
 
 func (r *ProtocolStats) insertRate(db *sql.DB, protocolName string, metric types.Metric) error {
-	stmt, err := db.Prepare("INSERT INTO protocolStatsRate (peerID, protocolName, rateIn, rateOut, createdAt) VALUES ($1, $2, $3, $4, $5);")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(r.PeerID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
+	_, err := db.Exec("INSERT INTO protocolStatsRate (peerID, protocolName, rateIn, rateOut, createdAt) VALUES ($1, $2, $3, $4, $5);", r.PeerID, protocolName, metric.RateIn, metric.RateOut, time.Now().Unix())
 	if err != nil {
 		return err
 	}
 
-	stmt, err = db.Prepare("INSERT INTO protocolStatsTotals (peerID, protocolName, totalIn, totalOut, createdAt) VALUES ($1, $2, $3, $4, $5) ON CONFLICT ON CONSTRAINT protocolStatsTotals_unique DO UPDATE SET totalIn = $3, totalOut = $4;")
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec(r.PeerID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
+	_, err = db.Exec("INSERT INTO protocolStatsTotals (peerID, protocolName, totalIn, totalOut, createdAt) VALUES ($1, $2, $3, $4, $5) ON CONFLICT ON CONSTRAINT protocolStatsTotals_unique DO UPDATE SET totalIn = $3, totalOut = $4;", r.PeerID, protocolName, metric.TotalIn, metric.TotalOut, time.Now().Format("2006-01-02"))
 	if err != nil {
 		return err
 	}
@@ -66,14 +58,14 @@ func (r *ProtocolStats) Put(db *sql.DB) error {
 	return nil
 }
 
-func (r *ProtocolStats) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) (err error) {
+func (r *ProtocolStats) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) (err error) {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding protocol stats: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding protocol stats: %v", err))
 		return err
 	}
 
 	if err := r.Put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving protocol stats: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error saving protocol stats: %v", err))
 		return err
 	}
 

@@ -113,7 +113,7 @@ func (s *Server) createTelemetryData(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		err := metric.Process(s.DB, errorDetails, &data)
+		err := metric.Process(s.ctx, s.DB, errorDetails, &data)
 		if err != nil {
 			continue
 		}

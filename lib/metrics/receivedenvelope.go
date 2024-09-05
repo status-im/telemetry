@@ -1,11 +1,11 @@
 package metrics
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
@@ -15,50 +15,52 @@ type ReceivedEnvelope struct {
 	types.ReceivedEnvelope
 }
 
-func (r *ReceivedEnvelope) put(db *sql.DB) error {
-	r.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO receivedEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, receiverKeyUID, nodeName, processingError, statusVersion, deviceType)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
-							RETURNING id;`)
+func (r *ReceivedEnvelope) put(ctx context.Context, db *sql.DB) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	lastInsertId := 0
-	err = stmt.QueryRow(
-		r.MessageHash,
-		r.SentAt,
-		r.CreatedAt,
-		r.PubsubTopic,
-		r.Topic,
-		r.ReceiverKeyUID,
-		r.NodeName,
-		r.ProcessingError,
-		r.StatusVersion,
-		r.DeviceType,
-	).Scan(&lastInsertId)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	result := tx.QueryRow(`INSERT INTO receivedEnvelopes (recordId, messageHash, sentAt, pubsubTopic,
+							topic, receiverKeyUID, processingError)
+							VALUES ($1, $2, $3, $4, $5, $6, $7)
+							ON CONFLICT ON CONSTRAINT receivedEnvelopes_unique DO NOTHING
+							RETURNING id;`, recordId, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.ProcessingError)
+	if result.Err() != nil {
+		if errors.Is(result.Err(), sql.ErrNoRows) {
 			return nil
 		} else {
 			return err
 		}
 	}
-	r.ID = lastInsertId
 
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
 
-func (r *ReceivedEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *ReceivedEnvelope) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding received envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding received envelope: %v", err))
 		return err
 	}
 
-	if err := r.put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving received envelope: %v", err))
+	if err := r.put(ctx, db); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving received envelope: %v", err))
 		return err
 	}
 
@@ -70,16 +72,10 @@ func (r *ReceivedEnvelope) Clean(db *sql.DB, before int64) (int64, error) {
 }
 
 func (r *ReceivedEnvelope) UpdateProcessingError(db *sql.DB) error {
-	r.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`UPDATE receivedEnvelopes SET processingError=$1 WHERE
+	_, err := db.Exec(`UPDATE receivedEnvelopes SET processingError=$1 WHERE
 							messageHash = $2 AND sentAt = $3 AND
 							pubsubTopic = $4 AND topic = $5 AND
-							receiverKeyUID = $6 AND nodeName = $7;`)
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec(r.ProcessingError, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID, r.NodeName)
+							receiverKeyUID = $6;`, r.ProcessingError, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.ReceiverKeyUID)
 	if err != nil {
 		return err
 	}
@@ -91,52 +87,52 @@ type SentEnvelope struct {
 	types.SentEnvelope
 }
 
-func (r *SentEnvelope) put(db *sql.DB) error {
-	r.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO sentEnvelopes (messageHash, sentAt, createdAt, pubsubTopic,
-							topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, deviceType)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
-							RETURNING id;`)
+func (r *SentEnvelope) put(ctx context.Context, db *sql.DB) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	lastInsertId := int64(0)
-	err = stmt.QueryRow(
-		r.MessageHash,
-		r.SentAt,
-		r.CreatedAt,
-		r.PubsubTopic,
-		r.Topic,
-		r.SenderKeyUID,
-		r.PeerID,
-		r.NodeName,
-		r.PublishMethod,
-		r.StatusVersion,
-		r.DeviceType,
-	).Scan(&lastInsertId)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	result := tx.QueryRow(`INSERT INTO sentEnvelopes (recordId, messageHash, sentAt, pubsubTopic,
+							topic, senderKeyUID, publishMethod)
+							VALUES ($1, $2, $3, $4, $5, $6, $7)
+							ON CONFLICT ON CONSTRAINT sentEnvelopes_unique DO NOTHING
+							RETURNING id;`, recordId, r.MessageHash, r.SentAt, r.PubsubTopic, r.Topic, r.SenderKeyUID, r.PublishMethod)
+	if result.Err() != nil {
+		if errors.Is(result.Err(), sql.ErrNoRows) {
 			return nil
 		} else {
 			return err
 		}
 	}
 
-	defer stmt.Close()
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
 	r.ID = int(lastInsertId)
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 	return nil
 }
-func (r *SentEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+
+func (r *SentEnvelope) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding sent envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding sent envelope: %v", err))
 		return err
 	}
 
-	if err := r.put(db); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error saving sent envelope: %v", err))
+	if err := r.put(ctx, db); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving sent envelope: %v", err))
 		return err
 	}
 	return nil
@@ -150,49 +146,49 @@ type ErrorSendingEnvelope struct {
 	types.ErrorSendingEnvelope
 }
 
-func (e *ErrorSendingEnvelope) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (e *ErrorSendingEnvelope) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &e); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding error sending envelope: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding error sending envelope: %v", err))
 		return err
 	}
 
-	e.CreatedAt = time.Now().Unix()
-	stmt, err := db.Prepare(`INSERT INTO errorSendingEnvelope (messageHash, sentAt, createdAt, pubsubTopic,
-		topic, senderKeyUID, peerId, nodeName, publishMethod, statusVersion, error, deviceType)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &e.SentEnvelope.TelemetryRecord)
+	if err != nil {
+		return err
+	}
+
+	result := tx.QueryRow(`INSERT INTO errorSendingEnvelope (recordId, messageHash, sentAt, pubsubTopic,
+		topic, senderKeyUID, publishMethod, error)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT ON CONSTRAINT errorSendingEnvelope_unique DO NOTHING
-		RETURNING id;`)
-	if err != nil {
-		return err
-	}
+		RETURNING id;`, recordId, e.SentEnvelope.MessageHash, e.SentEnvelope.SentAt, e.SentEnvelope.PubsubTopic, e.SentEnvelope.Topic, e.SentEnvelope.SenderKeyUID, e.SentEnvelope.PublishMethod, e.Error)
 
-	lastInsertId := int64(0)
-	err = stmt.QueryRow(
-		e.SentEnvelope.MessageHash,
-		e.SentEnvelope.SentAt,
-		e.CreatedAt,
-		e.SentEnvelope.PubsubTopic,
-		e.SentEnvelope.Topic,
-		e.SentEnvelope.SenderKeyUID,
-		e.SentEnvelope.PeerID,
-		e.SentEnvelope.NodeName,
-		e.SentEnvelope.PublishMethod,
-		e.SentEnvelope.StatusVersion,
-		e.Error,
-		e.DeviceType,
-	).Scan(&lastInsertId)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	if result.Err() != nil {
+		if errors.Is(result.Err(), sql.ErrNoRows) {
 			return nil
 		} else {
-			errs.Append(data.Id, fmt.Sprintf("Error saving error sending envelope: %v", err))
+			errs.Append(data.ID, fmt.Sprintf("Error saving error sending envelope: %v", err))
 			return err
 		}
 	}
 
-	defer stmt.Close()
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
 	e.SentEnvelope.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
 
 	return nil
 }

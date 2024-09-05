@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"context"
 	"database/sql"
 	"math"
 	"testing"
@@ -13,8 +14,16 @@ import (
 	"go.uber.org/zap"
 )
 
-func updateCreatedAt(db *sql.DB, m *metrics.ReceivedMessage) error {
-	_, err := db.Exec("UPDATE receivedMessages SET createdAt = $1 WHERE id = $2", m.CreatedAt, m.ID)
+func updateCreatedAt(db *sql.DB, m *metrics.ReceivedMessage, createdAt int64) error {
+	_, err := db.Exec(`
+		UPDATE telemetryRecord
+		SET createdAt = $1
+		WHERE id = (
+			SELECT recordId
+			FROM receivedMessages
+			WHERE id = $2
+		)
+	`, createdAt, m.ID)
 	return err
 }
 
@@ -56,7 +65,8 @@ func TestRunAggregatorSimple(t *testing.T) {
 	}
 
 	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err := m.Put(db)
+	ctx := context.Background()
+	err := m.Put(ctx, db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
@@ -68,7 +78,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
@@ -80,10 +90,9 @@ func TestRunAggregatorSimple(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.SentAt)
 	require.NoError(t, err)
 
 	logger, err := zap.NewDevelopment()
@@ -100,6 +109,7 @@ func TestRunAggregatorSimple(t *testing.T) {
 	require.Equal(t, 1.0, res[0].Value)
 	require.Equal(t, "", res[1].ChatID)
 	require.Equal(t, 1.0, res[1].Value)
+
 }
 
 func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
@@ -114,7 +124,8 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m := &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err := m.Put(db)
+	ctx := context.Background()
+	err := m.Put(ctx, db)
 	require.NoError(t, err)
 
 	oneHourAndHalf := time.Hour + time.Minute*30
@@ -126,7 +137,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -137,7 +148,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
 
 	twoHourAndHalf := 5*time.Hour + time.Minute*30
@@ -149,10 +160,9 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.SentAt)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -163,7 +173,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -174,7 +184,7 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
 
 	mData = types.ReceivedMessage{
@@ -185,10 +195,9 @@ func TestRunAggregatorSimpleWithMessageMissing(t *testing.T) {
 		Topic:          "1",
 	}
 	m = &metrics.ReceivedMessage{ReceivedMessage: mData}
-	err = m.Put(db)
+	err = m.Put(ctx, db)
 	require.NoError(t, err)
-	m.CreatedAt = m.SentAt
-	err = updateCreatedAt(db, m)
+	err = updateCreatedAt(db, m, m.SentAt)
 	require.NoError(t, err)
 
 	logger, err := zap.NewDevelopment()

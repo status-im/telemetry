@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -17,9 +18,11 @@ func TestEnvelopesUpdate(t *testing.T) {
 	var errs common.MetricErrors
 
 	firstEnvelopeData := types.ReceivedEnvelope{
+		TelemetryRecord: types.TelemetryRecord{
+			NodeName: "status",
+		},
 		MessageHash:    "1",
 		ReceiverKeyUID: "1",
-		NodeName:       "status",
 		SentAt:         time.Now().Unix(),
 		Topic:          "1",
 		PubsubTopic:    "1",
@@ -29,19 +32,21 @@ func TestEnvelopesUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	telemetryRequest1 := types.TelemetryRequest{
-		Id:            0,
+		ID:            0,
 		TelemetryType: types.ReceivedEnvelopeMetric,
 		TelemetryData: (*json.RawMessage)(&data),
 	}
 
 	var firstEnvelope ReceivedEnvelope
-	err = firstEnvelope.Process(db, &errs, &telemetryRequest1)
+	err = firstEnvelope.Process(context.Background(), db, &errs, &telemetryRequest1)
 	require.NoError(t, err)
 
 	envelopeToUpdateData := types.ReceivedEnvelope{
+		TelemetryRecord: types.TelemetryRecord{
+			NodeName: "status",
+		},
 		MessageHash:     "1",
 		ReceiverKeyUID:  "1",
-		NodeName:        "status",
 		SentAt:          time.Now().Unix(),
 		Topic:           "1",
 		PubsubTopic:     "1",

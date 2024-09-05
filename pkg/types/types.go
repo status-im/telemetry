@@ -16,72 +16,62 @@ const (
 )
 
 type TelemetryRequest struct {
-	Id            int              `json:"id"`
+	ID            int              `json:"id"`
 	TelemetryType TelemetryType    `json:"telemetry_type"`
 	TelemetryData *json.RawMessage `json:"telemetry_data"`
 }
 
-type PeerCount struct {
-	ID            int    `json:"id"`
-	CreatedAt     int64  `json:"createdAt"`
-	Timestamp     int64  `json:"timestamp"`
+type TelemetryRecord struct {
 	NodeName      string `json:"nodeName"`
-	NodeKeyUid    string `json:"nodeKeyUid"`
 	PeerID        string `json:"peerId"`
-	PeerCount     int    `json:"peerCount"`
 	StatusVersion string `json:"statusVersion"`
 	DeviceType    string `json:"deviceType"`
+}
+
+type PeerCount struct {
+	TelemetryRecord
+	ID         int    `json:"id"`
+	NodeKeyUID string `json:"nodeKeyUID"`
+	PeerCount  int    `json:"peerCount"`
+	Timestamp  int64  `json:"timestamp"`
 }
 
 type PeerConnFailure struct {
-	ID            int    `json:"id"`
-	CreatedAt     int64  `json:"createdAt"`
-	Timestamp     int64  `json:"timestamp"`
-	NodeName      string `json:"nodeName"`
-	NodeKeyUid    string `json:"nodeKeyUid"`
-	PeerId        string `json:"peerId"`
-	StatusVersion string `json:"statusVersion"`
-	FailedPeerId  string `json:"failedPeerId"`
-	FailureCount  int    `json:"failureCount"`
-	DeviceType    string `json:"deviceType"`
+	TelemetryRecord
+	ID           int    `json:"id"`
+	NodeKeyUID   string `json:"nodeKeyUID"`
+	FailedPeerId string `json:"failedPeerId"`
+	FailureCount int    `json:"failureCount"`
+	Timestamp    int64  `json:"timestamp"`
 }
 
 type SentEnvelope struct {
+	TelemetryRecord
 	ID              int    `json:"id"`
 	MessageHash     string `json:"messageHash"`
 	SentAt          int64  `json:"sentAt"`
-	CreatedAt       int64  `json:"createdAt"`
 	PubsubTopic     string `json:"pubsubTopic"`
 	Topic           string `json:"topic"`
 	SenderKeyUID    string `json:"senderKeyUID"`
-	PeerID          string `json:"peerId"`
-	NodeName        string `json:"nodeName"`
 	ProcessingError string `json:"processingError"`
 	PublishMethod   string `json:"publishMethod"`
-	StatusVersion   string `json:"statusVersion"`
-	DeviceType      string `json:"deviceType"`
 }
 
 type ErrorSendingEnvelope struct {
-	CreatedAt    int64        `json:"createdAt"`
+	ID           int          `json:"id"`
 	Error        string       `json:"error"`
 	SentEnvelope SentEnvelope `json:"sentEnvelope"`
-	DeviceType   string       `json:"deviceType"`
 }
 
 type ReceivedEnvelope struct {
+	TelemetryRecord
 	ID              int    `json:"id"`
-	MessageHash     string `json:"messageHash"`
 	SentAt          int64  `json:"sentAt"`
-	CreatedAt       int64  `json:"createdAt"`
+	MessageHash     string `json:"messageHash"`
 	PubsubTopic     string `json:"pubsubTopic"`
 	Topic           string `json:"topic"`
 	ReceiverKeyUID  string `json:"receiverKeyUID"`
-	PeerID          string `json:"peerId"`
-	NodeName        string `json:"nodeName"`
 	ProcessingError string `json:"processingError"`
-	StatusVersion   string `json:"statusVersion"`
-	DeviceType      string `json:"deviceType"`
 }
 
 type Metric struct {
@@ -101,6 +91,7 @@ type ProtocolStats struct {
 }
 
 type ReceivedMessage struct {
+	TelemetryRecord
 	ID             int    `json:"id"`
 	ChatID         string `json:"chatId"`
 	MessageHash    string `json:"messageHash"`
@@ -108,12 +99,7 @@ type ReceivedMessage struct {
 	MessageType    string `json:"messageType"`
 	MessageSize    int    `json:"messageSize"`
 	ReceiverKeyUID string `json:"receiverKeyUID"`
-	PeerID         string `json:"peerId"`
-	NodeName       string `json:"nodeName"`
 	SentAt         int64  `json:"sentAt"`
 	Topic          string `json:"topic"`
 	PubsubTopic    string `json:"pubsubTopic"`
-	CreatedAt      int64  `json:"createdAt"`
-	StatusVersion  string `json:"statusVersion"`
-	DeviceType     string `json:"deviceType"`
 }

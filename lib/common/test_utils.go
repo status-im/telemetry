@@ -2,6 +2,7 @@ package common
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/status-im/telemetry/lib/database"
@@ -26,49 +27,26 @@ func DropTables(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = tx.Exec("DROP TABLE IF EXISTS receivedMessages")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+
+	tables := []string{
+		"receivedMessages",
+		"receivedMessageAggregated",
+		"receivedEnvelopes",
+		"sentEnvelopes",
+		"protocolStatsRate",
+		"protocolStatsTotals",
+		"peercount",
+		"peerconnfailure",
+		"errorsendingenvelope",
+		"schema_migrations",
 	}
 
-	_, err = tx.Exec("DROP TABLE IF EXISTS receivedMessageAggregated")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
+	for _, table := range tables {
+		_, err := tx.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %s", table))
+		if err != nil {
+			log.Fatalf("an error '%s' was not expected when dropping the table %s", err, table)
+		}
 
-	_, err = tx.Exec("DROP TABLE IF EXISTS receivedEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = tx.Exec("DROP TABLE IF EXISTS sentEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = tx.Exec("DROP TABLE IF EXISTS protocolStatsRate")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = tx.Exec("DROP TABLE IF EXISTS protocolStatsTotals")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = tx.Exec("DROP TABLE IF EXISTS peercount")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS peerconnfailure")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
-	}
-
-	_, err = db.Exec("DROP TABLE IF EXISTS errorsendingenvelope")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
 
 	_, err = tx.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
@@ -107,6 +85,11 @@ func DropTables(db *sql.DB) {
 	}
 
 	_, err = tx.Exec("DROP TABLE IF EXISTS schema_migrations")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the table", err)
+	}
+
+	_, err = tx.Exec("DROP TABLE IF EXISTS telemetryRecord")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the table", err)
 	}
