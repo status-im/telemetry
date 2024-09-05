@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/status-im/telemetry/lib/common"
 	"github.com/status-im/telemetry/pkg/types"
 )
 
@@ -65,7 +66,7 @@ func (r *ProtocolStats) put(db *sql.DB) error {
 	return nil
 }
 
-func (r *ProtocolStats) process(db *sql.DB, errs *MetricErrors, data *types.TelemetryRequest) (err error) {
+func (r *ProtocolStats) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) (err error) {
 	if err := json.Unmarshal(*data.TelemetryData, &r.data); err != nil {
 		errs.Append(data.ID, fmt.Sprintf("Error decoding protocol stats: %v", err))
 		return err

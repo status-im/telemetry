@@ -1,4 +1,4 @@
-package telemetry
+package metrics
 
 import (
 	"database/sql"
@@ -7,25 +7,20 @@ import (
 )
 
 func InsertTelemetryRecord(tx *sql.Tx, data *types.TelemetryRecord) (int, error) {
-	stmt, err := tx.Prepare(`
+	result := tx.QueryRow(`
 		INSERT INTO telemetryRecord (nodeName, peerId, statusVersion, deviceType)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id;
-	`)
-	if err != nil {
-		return 0, err
+	`, data.NodeName, data.PeerID, data.StatusVersion, data.DeviceType)
+	if result.Err() != nil {
+		return 0, result.Err()
 	}
 
 	var recordId int
-	err = stmt.QueryRow(
-		data.NodeName,
-		data.PeerID,
-		data.StatusVersion,
-		data.DeviceType,
-	).Scan(&recordId)
+	err := result.Scan(&recordId)
 	if err != nil {
 		return 0, err
 	}
 
-	return recordId, nil
+	return int(recordId), nil
 }

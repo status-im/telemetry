@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -37,7 +38,7 @@ func TestEnvelopesUpdate(t *testing.T) {
 	}
 
 	var firstEnvelope ReceivedEnvelope
-	err = firstEnvelope.Process(db, &errs, &telemetryRequest1)
+	err = firstEnvelope.Process(context.Background(), db, &errs, &telemetryRequest1)
 	require.NoError(t, err)
 
 	envelopeToUpdateData := types.ReceivedEnvelope{

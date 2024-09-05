@@ -14,43 +14,39 @@ type PeerCount struct {
 	types.PeerCount
 }
 
-func (r *PeerCount) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *PeerCount) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding peer count: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer count: %v", err))
 		return err
 	}
 
-	tx, err := db.BeginTx(context.Background(), nil)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	peerCountStmt, err := tx.Prepare(`
-		INSERT INTO peerCount (common_fields_id, nodeKeyUid, peerCount)
-		VALUES ($1, $2, $3)
+	result := tx.QueryRow(`
+		INSERT INTO peerCount (recordId, nodeKeyUid, peerCount, timestamp)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id;
-	`)
-	if err != nil {
-		return err
+	`, recordId, r.NodeKeyUID, r.PeerCount.PeerCount, r.PeerCount.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer count: %v", result.Err()))
+		return result.Err()
 	}
 
 	var lastInsertId int
-	err = peerCountStmt.QueryRow(
-		recordId,
-		r.data.NodeKeyUID,
-		r.data.PeerCount,
-	).Scan(&lastInsertId)
+	err = result.Scan(&lastInsertId)
 	if err != nil {
-		errs.Append(data.ID, fmt.Sprintf("Error saving peer count: %v", err))
 		return err
 	}
-	r.ID = lastInsertId
+	r.ID = int(lastInsertId)
 
 	if err := tx.Commit(); err != nil {
 		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
@@ -68,42 +64,39 @@ type PeerConnFailure struct {
 	types.PeerConnFailure
 }
 
-func (r *PeerConnFailure) Process(db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+func (r *PeerConnFailure) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
 	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.Id, fmt.Sprintf("Error decoding peer connection failure: %v", err))
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer connection failure: %v", err))
 		return err
 	}
 
-	tx, err := db.BeginTx(context.Background(), nil)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	recordId, err := InsertTelemetryRecord(tx, &r.data.TelemetryRecord)
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO peerConnFailure (common_fields_id, nodeKeyUid, failedPeerId, failureCount) VALUES ($1, $2, $3, $4) RETURNING id;")
+	result := tx.QueryRow(`
+		INSERT INTO peerConnFailure (recordId, nodeKeyUid, failedPeerId, failureCount, timestamp)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id;
+	`, recordId, r.NodeKeyUID, r.FailedPeerId, r.FailureCount, r.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer connection failure: %v", result.Err()))
+		return result.Err()
+	}
+
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
-
-	defer stmt.Close()
-
-	lastInsertId := 0
-	err = stmt.QueryRow(
-		recordId,
-		r.data.NodeKeyUID,
-		r.data.FailedPeerId,
-		r.data.FailureCount,
-	).Scan(&lastInsertId)
-	if err != nil {
-		errs.Append(data.ID, fmt.Sprintf("Error saving peer connection failure: %v", err))
-		return err
-	}
-	r.ID = lastInsertId
+	r.ID = int(lastInsertId)
 
 	if err := tx.Commit(); err != nil {
 		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
