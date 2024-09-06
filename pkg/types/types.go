@@ -5,20 +5,22 @@ import "encoding/json"
 type TelemetryType string
 
 const (
-	ProtocolStatsMetric           TelemetryType = "ProtocolStats"
-	ReceivedEnvelopeMetric        TelemetryType = "ReceivedEnvelope"
-	SentEnvelopeMetric            TelemetryType = "SentEnvelope"
-	UpdateEnvelopeMetric          TelemetryType = "UpdateEnvelope"
-	ReceivedMessagesMetric        TelemetryType = "ReceivedMessages"
-	ErrorSendingEnvelopeMetric    TelemetryType = "ErrorSendingEnvelope"
-	PeerCountMetric               TelemetryType = "PeerCount"
-	PeerConnFailureMetric         TelemetryType = "PeerConnFailure"
-	PeerCountByShardMetric        TelemetryType = "PeerCountByShard"
-	PeerCountByOriginMetric       TelemetryType = "PeerCountByOrigin"
-	MessageCheckSuccessMetric     TelemetryType = "MessageCheckSuccess"
-	MessageCheckFailureMetric     TelemetryType = "MessageCheckFailure"
-	DialFailureMetric             TelemetryType = "DialFailure"
-	StoreConfirmationFailedMetric TelemetryType = "StoreConfirmationFailed"
+	ProtocolStatsMetric          TelemetryType = "ProtocolStats"
+	ReceivedEnvelopeMetric       TelemetryType = "ReceivedEnvelope"
+	SentEnvelopeMetric           TelemetryType = "SentEnvelope"
+	UpdateEnvelopeMetric         TelemetryType = "UpdateEnvelope"
+	ReceivedMessagesMetric       TelemetryType = "ReceivedMessages"
+	ErrorSendingEnvelopeMetric   TelemetryType = "ErrorSendingEnvelope"
+	PeerCountMetric              TelemetryType = "PeerCount"
+	PeerConnFailureMetric        TelemetryType = "PeerConnFailure"
+	PeerCountByShardMetric       TelemetryType = "PeerCountByShard"
+	PeerCountByOriginMetric      TelemetryType = "PeerCountByOrigin"
+	MessageCheckSuccessMetric    TelemetryType = "MessageCheckSuccess"
+	MessageCheckFailureMetric    TelemetryType = "MessageCheckFailure"
+	DialFailureMetric            TelemetryType = "DialFailure"
+	StoreConfrimationErrorMetric TelemetryType = "StoreConfrimationError"
+	MissingMessageMetric         TelemetryType = "MissedMessage"
+	MissingRelevantMessageMetric TelemetryType = "MissedRelevantMessage"
 )
 
 type Origin int64
@@ -169,9 +171,21 @@ type DialFailure struct {
 	Protocols string        `json:"protocols"`
 	Timestamp int64         `json:"timestamp"`
 }
-type StoreConfirmationFailed struct {
+
+type MissingMessage struct {
 	TelemetryRecord
-	ID          int    `json:"id"`
-	MessageHash string `json:"messageHash"`
-	Timestamp   int64  `json:"timestamp"`
+	ID           int    `json:"id"`
+	ContentTopic string `json:"contentTopic"`
+	MessageHash  string `json:"messageHash"`
+	SentAt       int64  `json:"sentAt"`
+	PubsubTopic  string `json:"pubsubTopic"`
+}
+
+type MissingRelevantMessage struct {
+	TelemetryRecord
+	ID           int    `json:"id"`
+	ContentTopic string `json:"contentTopic"`
+	MessageHash  string `json:"messageHash"`
+	SentAt       int64  `json:"sentAt"`
+	PubsubTopic  string `json:"pubsubTopic"`
 }

@@ -17,10 +17,10 @@
 // 000015_device_type.up.sql (383B)
 // 000016_common_fields.up.sql (5.018kB)
 // 000017_peer_count_shard_origin.up.sql (1.263kB)
-// 000017_store_confirmation_failure.up.sql (432B)
 // 000018_waku_req_res.up.sql (462B)
 // 000019_message_check.up.sql (1.298kB)
 // 000020_dial_failure.up.sql (955B)
+// 000021_missing_messages.up.sql (1.05kB)
 // doc.go (72B)
 
 package database
@@ -429,26 +429,6 @@ func _000017_peer_count_shard_originUpSql() (*asset, error) {
 	return a, nil
 }
 
-var __000017_store_confirmation_failureUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\xd0\xb1\x4e\xf3\x30\x14\x05\xe0\xdd\x4f\x71\xc6\x44\xfa\xdf\xa0\x93\xff\xf4\xa6\x58\x04\x07\xae\x6f\xa4\x76\xaa\x22\xec\x82\x45\x93\x08\x27\x1d\x78\x7b\x44\x68\x18\x8a\x22\xe1\xf5\xd8\x3e\x9f\x4e\xc1\xa4\x85\x20\xfa\x7f\x45\x30\x25\x6c\x2d\xa0\xbd\x71\xe2\x30\x4e\x43\x0a\xc5\xd0\x9f\x62\xea\xda\x29\x0e\x7d\xd9\xc6\x73\xf0\xc8\x14\x00\x44\x0f\x47\x6c\x74\x85\x47\x36\x0f\x9a\x0f\xb8\xa7\xc3\xbf\x39\xea\xc2\x38\xb6\x2f\xe1\xae\x1d\x5f\x21\xb4\x97\xf9\x53\xdb\x54\xd5\x77\x9c\xc2\xf3\x90\xbc\xf1\x30\x56\x68\x47\xfc\x13\xab\x7c\xa3\x94\xae\x84\xf8\xea\x59\x13\xe8\xed\x16\x45\x6d\x9d\xb0\x36\x56\x70\x7a\x3b\xae\xdc\x3c\x4e\xe1\x1c\xba\x30\xa5\x0f\x9e\x4b\xe7\xfe\xe5\x94\x35\x93\xd9\xd9\x2f\x37\xb2\x05\x95\x83\xa9\x24\x26\x5b\x90\xc3\xcd\xeb\x2c\xfa\xbf\x0a\xd5\x0d\x71\xcd\x77\xe9\xe3\xfb\x25\x40\x35\xd6\x3c\x35\x74\x9d\x76\xb1\xfc\x5a\x53\xe5\x9b\xcf\x00\x00\x00\xff\xff\x9e\x2b\x05\x5b\xb0\x01\x00\x00")
-
-func _000017_store_confirmation_failureUpSqlBytes() ([]byte, error) {
-	return bindataRead(
-		__000017_store_confirmation_failureUpSql,
-		"000017_store_confirmation_failure.up.sql",
-	)
-}
-
-func _000017_store_confirmation_failureUpSql() (*asset, error) {
-	bytes, err := _000017_store_confirmation_failureUpSqlBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "000017_store_confirmation_failure.up.sql", size: 432, mode: os.FileMode(0644), modTime: time.Unix(1727493408, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2b, 0xe3, 0xb3, 0x32, 0x8b, 0x4c, 0x72, 0xfa, 0xd1, 0xed, 0xb5, 0x25, 0x87, 0x1e, 0xcb, 0xda, 0x37, 0x11, 0x7a, 0xf7, 0x72, 0xc1, 0xe1, 0xfa, 0x2f, 0x9d, 0xee, 0xed, 0x18, 0x29, 0x76, 0x46}}
-	return a, nil
-}
-
 var __000018_waku_req_resUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x8e\xcd\x4e\xeb\x30\x10\x46\xd7\xc9\x53\xcc\xb2\x91\xb2\xb8\xba\x52\x56\xac\xdc\x60\xa8\x45\xea\x80\x33\x41\xed\x0a\xb9\xc9\x88\x46\x34\xb1\xeb\x1f\xc1\xe3\x23\x68\x85\x82\x44\x61\x3b\xe7\xe8\x9b\x53\x2a\xce\x90\x03\xb2\x65\xc5\x41\xdc\x80\xac\x11\xf8\x46\x34\xd8\xc0\xab\x7e\x89\x8a\x8e\x91\x7c\x50\xe4\xad\x99\x3c\xc1\x22\x4d\x86\x1e\x1a\xae\x04\xab\xe0\x5e\x89\x35\x53\x5b\xb8\xe3\xdb\x3c\x4d\xac\x33\xc1\x74\xe6\x00\x8f\x4c\x95\x2b\xa6\x16\xc5\xbf\xec\x73\x4e\xb6\x55\x95\xa7\x09\xd9\x3d\x8d\xe4\xf4\x01\x96\x75\x5d\x71\x26\xe7\x30\x0c\x23\xf9\xa0\x47\x0b\x42\x22\xbf\xe5\x6a\x0e\x3d\xd1\x84\xbf\x09\x9d\x23\x1d\xa8\x67\xe1\x47\x68\xa6\x40\x53\x40\x63\x87\xee\xab\xed\x7f\x51\x7c\x8b\xb3\x71\xe7\xe3\xee\x0f\x87\xc8\x89\xfe\x22\x1e\xc9\x7b\xfd\x4c\x2b\xed\xf7\x17\x1d\x72\xce\xb8\xf5\x49\x04\xe4\x1b\xfc\xb8\xbd\x05\xa7\xaf\x75\xd0\xe7\x43\x9a\x94\xb5\x6c\x50\x31\x21\x11\xce\xa3\xfe\x29\x4e\xc3\x31\x12\xb4\x52\x3c\xb4\x1c\x16\xa7\x96\x1c\x66\x4f\xb3\x34\xbb\x7a\x0f\x00\x00\xff\xff\x2c\x39\x72\x09\xce\x01\x00\x00")
 
 func _000018_waku_req_resUpSqlBytes() ([]byte, error) {
@@ -506,6 +486,26 @@ func _000020_dial_failureUpSql() (*asset, error) {
 
 	info := bindataFileInfo{name: "000020_dial_failure.up.sql", size: 955, mode: os.FileMode(0644), modTime: time.Unix(1727493408, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x58, 0xf3, 0xb0, 0x5, 0x72, 0x52, 0xda, 0xc3, 0x18, 0xa7, 0x1e, 0xd, 0xbe, 0x5, 0xb8, 0xec, 0xda, 0xd9, 0x19, 0x7b, 0x37, 0x4a, 0xc2, 0x9a, 0x59, 0xe2, 0x61, 0x6c, 0x3f, 0x55, 0x7a, 0xee}}
+	return a, nil
+}
+
+var __000021_missing_messagesUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xdc\x92\xb1\x6e\xc2\x30\x10\x86\x77\x3f\xc5\x8d\x20\xf5\x0d\x3a\xb9\x70\x50\xab\xc1\x69\x2f\x8e\x04\x13\x0a\x89\x4b\xad\x12\x87\xc6\x4e\xa5\xbe\x7d\x55\x43\x16\x1b\xc4\x52\x75\xa8\xd7\xff\xf7\xdd\x77\x77\xff\x8c\x90\x2b\x04\xc5\x1f\x32\x04\xb1\x00\x99\x2b\xc0\xb5\x28\x54\x01\xad\x71\xce\xd8\xfd\x4a\x3b\x57\xed\xb5\x83\x09\x03\x00\x30\x0d\x14\x48\x82\x67\xf0\x4c\x62\xc5\x69\x03\x4f\xb8\xb9\x0b\x52\x7b\x72\x3e\x56\xee\x0d\x14\xae\x55\x28\x26\xcb\x2c\x3b\xc9\x4e\x5b\xcf\x3d\x08\xa9\x70\x89\x14\x89\x75\x67\xbd\xb6\x5e\x75\x47\x53\x5f\xfa\x7c\x1c\x76\x6e\xd8\x5d\x92\x01\x82\xa1\xd7\x75\xd7\x37\xa2\x49\xea\xb3\xe9\x3d\x63\x3c\x53\x48\xe7\x29\xe3\xb9\xf8\x7c\x0e\xb3\x5c\x16\x8a\xb8\x90\x0a\x5e\xdf\xb7\x91\x63\xeb\xf5\x41\xb7\xda\xf7\x5f\x14\x9a\x84\x7e\xe3\x5b\xe4\x84\x62\x29\x7f\xb6\x00\x93\x11\x62\x0a\x84\x0b\x24\x94\x33\x2c\x20\xfa\x3d\x31\xcd\x2d\x22\x16\x21\xc5\x3c\x83\x35\x1f\x83\x06\x56\x4a\xf1\x52\xe2\xf9\x30\x63\xef\xe4\x16\xe9\x82\xc3\x4a\x6e\x5f\x9e\xf4\x41\x7f\x56\xd6\xff\xd7\x04\x24\xf3\x5d\x4d\x42\xec\xfc\xab\x44\x24\x84\x57\x92\x91\xf0\xfd\x42\x42\xbe\x03\x00\x00\xff\xff\xd4\x9e\x36\x30\x1a\x04\x00\x00")
+
+func _000021_missing_messagesUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000021_missing_messagesUpSql,
+		"000021_missing_messages.up.sql",
+	)
+}
+
+func _000021_missing_messagesUpSql() (*asset, error) {
+	bytes, err := _000021_missing_messagesUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000021_missing_messages.up.sql", size: 1050, mode: os.FileMode(0644), modTime: time.Unix(1727738284, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x66, 0x4b, 0x66, 0x41, 0x3a, 0x94, 0xb3, 0x90, 0x19, 0x67, 0x35, 0xf6, 0xc9, 0x91, 0x4a, 0x70, 0x96, 0x83, 0xf4, 0x23, 0x24, 0xea, 0x4b, 0x1d, 0x24, 0xb0, 0x39, 0xb0, 0x73, 0x58, 0xf0, 0x4d}}
 	return a, nil
 }
 
@@ -620,28 +620,28 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"000001_message_type.up.sql":               _000001_message_typeUpSql,
-	"000002_bandwidth_protocol.up.sql":         _000002_bandwidth_protocolUpSql,
-	"000003_index_truncate.up.sql":             _000003_index_truncateUpSql,
-	"000004_envelope.table.up.sql":             _000004_envelopeTableUpSql,
-	"000005_pushed_envelope.up.sql":            _000005_pushed_envelopeUpSql,
-	"000006_status_version.up.sql":             _000006_status_versionUpSql,
-	"000007_waku_push_filter.up.sql":           _000007_waku_push_filterUpSql,
-	"000008_error_sending_envelope.up.sql":     _000008_error_sending_envelopeUpSql,
-	"000009_peer_count.up.sql":                 _000009_peer_countUpSql,
-	"000010_peer_id.up.sql":                    _000010_peer_idUpSql,
-	"000011_waku_push_error.up.sql":            _000011_waku_push_errorUpSql,
-	"000012_waku_generic.up.sql":               _000012_waku_genericUpSql,
-	"000013_peer_conn_failure.up.sql":          _000013_peer_conn_failureUpSql,
-	"000014_bandwidth_column.up.sql":           _000014_bandwidth_columnUpSql,
-	"000015_device_type.up.sql":                _000015_device_typeUpSql,
-	"000016_common_fields.up.sql":              _000016_common_fieldsUpSql,
-	"000017_peer_count_shard_origin.up.sql":    _000017_peer_count_shard_originUpSql,
-	"000017_store_confirmation_failure.up.sql": _000017_store_confirmation_failureUpSql,
-	"000018_waku_req_res.up.sql":               _000018_waku_req_resUpSql,
-	"000019_message_check.up.sql":              _000019_message_checkUpSql,
-	"000020_dial_failure.up.sql":               _000020_dial_failureUpSql,
-	"doc.go":                                   docGo,
+	"000001_message_type.up.sql":            _000001_message_typeUpSql,
+	"000002_bandwidth_protocol.up.sql":      _000002_bandwidth_protocolUpSql,
+	"000003_index_truncate.up.sql":          _000003_index_truncateUpSql,
+	"000004_envelope.table.up.sql":          _000004_envelopeTableUpSql,
+	"000005_pushed_envelope.up.sql":         _000005_pushed_envelopeUpSql,
+	"000006_status_version.up.sql":          _000006_status_versionUpSql,
+	"000007_waku_push_filter.up.sql":        _000007_waku_push_filterUpSql,
+	"000008_error_sending_envelope.up.sql":  _000008_error_sending_envelopeUpSql,
+	"000009_peer_count.up.sql":              _000009_peer_countUpSql,
+	"000010_peer_id.up.sql":                 _000010_peer_idUpSql,
+	"000011_waku_push_error.up.sql":         _000011_waku_push_errorUpSql,
+	"000012_waku_generic.up.sql":            _000012_waku_genericUpSql,
+	"000013_peer_conn_failure.up.sql":       _000013_peer_conn_failureUpSql,
+	"000014_bandwidth_column.up.sql":        _000014_bandwidth_columnUpSql,
+	"000015_device_type.up.sql":             _000015_device_typeUpSql,
+	"000016_common_fields.up.sql":           _000016_common_fieldsUpSql,
+	"000017_peer_count_shard_origin.up.sql": _000017_peer_count_shard_originUpSql,
+	"000018_waku_req_res.up.sql":            _000018_waku_req_resUpSql,
+	"000019_message_check.up.sql":           _000019_message_checkUpSql,
+	"000020_dial_failure.up.sql":            _000020_dial_failureUpSql,
+	"000021_missing_messages.up.sql":        _000021_missing_messagesUpSql,
+	"doc.go":                                docGo,
 }
 
 // AssetDebug is true if the assets were built with the debug flag enabled.
@@ -690,28 +690,28 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"000001_message_type.up.sql":               {_000001_message_typeUpSql, map[string]*bintree{}},
-	"000002_bandwidth_protocol.up.sql":         {_000002_bandwidth_protocolUpSql, map[string]*bintree{}},
-	"000003_index_truncate.up.sql":             {_000003_index_truncateUpSql, map[string]*bintree{}},
-	"000004_envelope.table.up.sql":             {_000004_envelopeTableUpSql, map[string]*bintree{}},
-	"000005_pushed_envelope.up.sql":            {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
-	"000006_status_version.up.sql":             {_000006_status_versionUpSql, map[string]*bintree{}},
-	"000007_waku_push_filter.up.sql":           {_000007_waku_push_filterUpSql, map[string]*bintree{}},
-	"000008_error_sending_envelope.up.sql":     {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
-	"000009_peer_count.up.sql":                 {_000009_peer_countUpSql, map[string]*bintree{}},
-	"000010_peer_id.up.sql":                    {_000010_peer_idUpSql, map[string]*bintree{}},
-	"000011_waku_push_error.up.sql":            {_000011_waku_push_errorUpSql, map[string]*bintree{}},
-	"000012_waku_generic.up.sql":               {_000012_waku_genericUpSql, map[string]*bintree{}},
-	"000013_peer_conn_failure.up.sql":          {_000013_peer_conn_failureUpSql, map[string]*bintree{}},
-	"000014_bandwidth_column.up.sql":           {_000014_bandwidth_columnUpSql, map[string]*bintree{}},
-	"000015_device_type.up.sql":                {_000015_device_typeUpSql, map[string]*bintree{}},
-	"000016_common_fields.up.sql":              {_000016_common_fieldsUpSql, map[string]*bintree{}},
-	"000017_peer_count_shard_origin.up.sql":    {_000017_peer_count_shard_originUpSql, map[string]*bintree{}},
-	"000017_store_confirmation_failure.up.sql": {_000017_store_confirmation_failureUpSql, map[string]*bintree{}},
-	"000018_waku_req_res.up.sql":               {_000018_waku_req_resUpSql, map[string]*bintree{}},
-	"000019_message_check.up.sql":              {_000019_message_checkUpSql, map[string]*bintree{}},
-	"000020_dial_failure.up.sql":               {_000020_dial_failureUpSql, map[string]*bintree{}},
-	"doc.go":                                   {docGo, map[string]*bintree{}},
+	"000001_message_type.up.sql":            {_000001_message_typeUpSql, map[string]*bintree{}},
+	"000002_bandwidth_protocol.up.sql":      {_000002_bandwidth_protocolUpSql, map[string]*bintree{}},
+	"000003_index_truncate.up.sql":          {_000003_index_truncateUpSql, map[string]*bintree{}},
+	"000004_envelope.table.up.sql":          {_000004_envelopeTableUpSql, map[string]*bintree{}},
+	"000005_pushed_envelope.up.sql":         {_000005_pushed_envelopeUpSql, map[string]*bintree{}},
+	"000006_status_version.up.sql":          {_000006_status_versionUpSql, map[string]*bintree{}},
+	"000007_waku_push_filter.up.sql":        {_000007_waku_push_filterUpSql, map[string]*bintree{}},
+	"000008_error_sending_envelope.up.sql":  {_000008_error_sending_envelopeUpSql, map[string]*bintree{}},
+	"000009_peer_count.up.sql":              {_000009_peer_countUpSql, map[string]*bintree{}},
+	"000010_peer_id.up.sql":                 {_000010_peer_idUpSql, map[string]*bintree{}},
+	"000011_waku_push_error.up.sql":         {_000011_waku_push_errorUpSql, map[string]*bintree{}},
+	"000012_waku_generic.up.sql":            {_000012_waku_genericUpSql, map[string]*bintree{}},
+	"000013_peer_conn_failure.up.sql":       {_000013_peer_conn_failureUpSql, map[string]*bintree{}},
+	"000014_bandwidth_column.up.sql":        {_000014_bandwidth_columnUpSql, map[string]*bintree{}},
+	"000015_device_type.up.sql":             {_000015_device_typeUpSql, map[string]*bintree{}},
+	"000016_common_fields.up.sql":           {_000016_common_fieldsUpSql, map[string]*bintree{}},
+	"000017_peer_count_shard_origin.up.sql": {_000017_peer_count_shard_originUpSql, map[string]*bintree{}},
+	"000018_waku_req_res.up.sql":            {_000018_waku_req_resUpSql, map[string]*bintree{}},
+	"000019_message_check.up.sql":           {_000019_message_checkUpSql, map[string]*bintree{}},
+	"000020_dial_failure.up.sql":            {_000020_dial_failureUpSql, map[string]*bintree{}},
+	"000021_missing_messages.up.sql":        {_000021_missing_messagesUpSql, map[string]*bintree{}},
+	"doc.go":                                {docGo, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.
