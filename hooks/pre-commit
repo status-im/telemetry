@@ -19,6 +19,31 @@ else
     done
 fi
 
+# check for new SQL migration files
+latest_migration=$(ls -1 telemetry/sql/*.up.sql 2>/dev/null | sort -V | tail -n 1)
+if [ -n "$latest_migration" ]; then
+    latest_number=$(basename "$latest_migration" | cut -d'_' -f1)
+    new_migrations=$(git diff --cached --name-only --diff-filter=A | grep '^telemetry/sql/.*\.up\.sql$')
+
+    if [ -n "$new_migrations" ]; then
+        for migration in $new_migrations; do
+            number=$(basename "$migration" | cut -d'_' -f1)
+            # enforce sequential prefix
+            if [ "$number" -le "$latest_number" ]; then
+                echo "Error: New migration file $migration does not follow the incremental naming structure."
+                exit 1
+            fi
+        done
+
+        # Check if bindata.go has changed
+        if ! git diff --cached --name-only | grep -q '^telemetry/bindata\.go$'; then
+            echo "Error: New SQL migration file added, but telemetry/bindata.go has not been updated."
+            echo "Please run 'make generate' to update bindata.go"
+            exit 1
+        fi
+    fi
+fi
+
 if go mod tidy -v 2>&1 | grep -q 'updates to go.mod needed'; then
     exit 1
 fi
