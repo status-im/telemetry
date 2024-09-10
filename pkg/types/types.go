@@ -13,6 +13,20 @@ const (
 	ErrorSendingEnvelopeMetric TelemetryType = "ErrorSendingEnvelope"
 	PeerCountMetric            TelemetryType = "PeerCount"
 	PeerConnFailureMetric      TelemetryType = "PeerConnFailure"
+	PeerCountByShardMetric     TelemetryType = "PeerCountByShard"
+	PeerCountByOriginMetric    TelemetryType = "PeerCountByOrigin"
+)
+
+type Origin int64
+
+const (
+	Unknown Origin = iota
+	Discv5
+	Static
+	PeerExchange
+	DNSDiscovery
+	Rendezvous
+	PeerManager
 )
 
 type TelemetryRequest struct {
@@ -102,4 +116,20 @@ type ReceivedMessage struct {
 	SentAt         int64  `json:"sentAt"`
 	Topic          string `json:"topic"`
 	PubsubTopic    string `json:"pubsubTopic"`
+}
+
+type PeerCountByShard struct {
+	TelemetryRecord
+	ID        int   `json:"id"`
+	Count     int   `json:"count"`
+	Shard     int   `json:"shard"`
+	Timestamp int64 `json:"timestamp"`
+}
+
+type PeerCountByOrigin struct {
+	TelemetryRecord
+	ID        int    `json:"id"`
+	Count     int    `json:"count"`
+	Origin    Origin `json:"origin"`
+	Timestamp int64  `json:"timestamp"`
 }

@@ -24,14 +24,17 @@ type ReceivedMessage struct {
 }
 
 func (r *ReceivedMessage) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
-	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
-		errs.Append(data.ID, fmt.Sprintf("Error decoding received message failure: %v", err))
+	var messages []ReceivedMessage
+	if err := json.Unmarshal(*data.TelemetryData, &messages); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error decoding received messages: %v", err))
 		return err
 	}
 
-	if err := r.Put(ctx, db); err != nil {
-		errs.Append(data.ID, fmt.Sprintf("Error saving received messages: %v", err))
-		return err
+	for _, message := range messages {
+		if err := message.Put(ctx, db); err != nil {
+			errs.Append(data.ID, fmt.Sprintf("Error saving received message: %v", err))
+			return err
+		}
 	}
 	return nil
 }
