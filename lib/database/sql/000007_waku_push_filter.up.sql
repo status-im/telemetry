@@ -1,15 +1,16 @@
 CREATE TABLE IF NOT EXISTS wakuPushFilter (
 	id SERIAL PRIMARY KEY,
-	walletAddress VARCHAR(255),
-	peerIdSender VARCHAR(255) NOT NULL,
-	peerIdReporter VARCHAR(255) NOT NULL,
-	sequenceHash VARCHAR(255) NOT NULL,
-	sequenceTotal VARCHAR(255) NOT NULL,
-	sequenceIndex VARCHAR(255) NOT NULL,
+	protocol VARCHAR(50) NOT NULL,
+	ephemeral BOOLEAN NOT NULL,
+	timestamp INTEGER NOT NULL,
+	seenTimestamp INTEGER NOT NULL,
+	createdAt INTEGER NOT NULL,
 	contentTopic VARCHAR(255) NOT NULL,
 	pubsubTopic VARCHAR(255) NOT NULL,
-	timestamp INTEGER NOT NULL,
-	createdAt INTEGER NOT NULL,
+	peerId VARCHAR(255) NOT NULL,
+	messageHash VARCHAR(255) NOT NULL,
+	errorMessage TEXT,
+	extraData TEXT,
 
-    CONSTRAINT wakuPushFilter_unique unique(peerIdSender, peerIdReporter, sequenceHash, sequenceIndex)
+	CONSTRAINT messages_unique UNIQUE (peerId, messageHash)
 );

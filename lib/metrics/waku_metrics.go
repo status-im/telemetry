@@ -10,7 +10,6 @@ type WakuTelemetryType string
 
 const (
 	LightPushFilter WakuTelemetryType = "LightPushFilter"
-	LightPushError  WakuTelemetryType = "LightPushError"
 	Generic         WakuTelemetryType = "Generic"
 )
 
@@ -21,21 +20,22 @@ type WakuTelemetryRequest struct {
 }
 
 type TelemetryPushFilter struct {
-	ID             int    `json:"id"`
-	WalletAddress  string `json:"walletAddress"`
-	PeerIDSender   string `json:"peerIdSender"`
-	PeerIDReporter string `json:"peerIdReporter"`
-	SequenceHash   string `json:"sequenceHash"`
-	SequenceTotal  uint64 `json:"sequenceTotal"`
-	SequenceIndex  uint64 `json:"sequenceIndex"`
-	ContentTopic   string `json:"contentTopic"`
-	PubsubTopic    string `json:"pubsubTopic"`
-	Timestamp      int64  `json:"timestamp"`
-	CreatedAt      int64  `json:"createdAt"`
+	ID            int    `json:"id"`
+	Protocol      string `json:"protocol"`
+	Ephemeral     bool   `json:"ephemeral"`
+	Timestamp     int64  `json:"timestamp"`
+	SeenTimestamp int64  `json:"seenTimestamp"`
+	CreatedAt     int64  `json:"createdAt"`
+	ContentTopic  string `json:"contentTopic"`
+	PubsubTopic   string `json:"pubsubTopic"`
+	PeerID        string `json:"peerId"`
+	MessageHash   string `json:"messageHash"`
+	ErrorMessage  string `json:"errorMessage"`
+	ExtraData     string `json:"extraData"`
 }
 
 func (r *TelemetryPushFilter) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO wakuPushFilter (peerIdSender, peerIdReporter, sequenceHash, sequenceTotal, sequenceIndex, contentTopic, pubsubTopic, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO wakuPushFilter (protocol, ephemeral, timestamp, seenTimestamp, contentTopic, pubsubTopic, peerId, messageHash, errorMessage, extraData, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;")
 	if err != nil {
 		return err
 	}
@@ -44,37 +44,20 @@ func (r *TelemetryPushFilter) Put(db *sql.DB) error {
 
 	r.CreatedAt = time.Now().Unix()
 	lastInsertId := 0
-	err = stmt.QueryRow(r.PeerIDSender, r.PeerIDReporter, r.SequenceHash, r.SequenceTotal, r.SequenceIndex, r.ContentTopic, r.PubsubTopic, r.Timestamp, r.CreatedAt).Scan(&lastInsertId)
-	if err != nil {
-		return err
-	}
-	r.ID = lastInsertId
+	err = stmt.QueryRow(
+		r.Protocol,
+		r.Ephemeral,
+		r.Timestamp,
+		r.SeenTimestamp,
+		r.ContentTopic,
+		r.PubsubTopic,
+		r.PeerID,
+		r.MessageHash,
+		r.ErrorMessage,
+		r.ExtraData,
+		r.CreatedAt,
+	).Scan(&lastInsertId)
 
-	return nil
-}
-
-type TelemetryPushError struct {
-	ID           int    `json:"id"`
-	PeerID       string `json:"peerId"`
-	ErrorMessage string `json:"errorMessage"`
-	PeerIDRemote string `json:"peerIdRemote"`
-	ContentTopic string `json:"contentTopic"`
-	PubsubTopic  string `json:"pubsubTopic"`
-	Timestamp    int64  `json:"timestamp"`
-	CreatedAt    int64  `json:"createdAt"`
-}
-
-func (r *TelemetryPushError) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO wakuPushError (peerId, peerIdRemote, contentTopic, pubsubTopic, errorMessage, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;")
-	if err != nil {
-		return err
-	}
-
-	defer stmt.Close()
-
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(r.PeerID, r.PeerIDRemote, r.ContentTopic, r.PubsubTopic, r.ErrorMessage, r.Timestamp, r.CreatedAt).Scan(&lastInsertId)
 	if err != nil {
 		return err
 	}
