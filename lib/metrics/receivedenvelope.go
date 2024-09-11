@@ -173,8 +173,8 @@ func (e *ErrorSendingEnvelope) Process(ctx context.Context, db *sql.DB, errs *co
 		if errors.Is(result.Err(), sql.ErrNoRows) {
 			return nil
 		} else {
-			errs.Append(data.ID, fmt.Sprintf("Error saving error sending envelope: %v", err))
-			return err
+			errs.Append(data.ID, fmt.Sprintf("Error saving error sending envelope: %v", result.Err()))
+			return result.Err()
 		}
 	}
 

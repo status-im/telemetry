@@ -109,3 +109,103 @@ func (r *PeerConnFailure) Process(ctx context.Context, db *sql.DB, errs *common.
 func (r *PeerConnFailure) Clean(db *sql.DB, before int64) (int64, error) {
 	return common.Cleanup(db, "peerConnFailure", before)
 }
+
+type PeerCountByShard struct {
+	types.PeerCountByShard
+}
+
+type PeerCountByOrigin struct {
+	types.PeerCountByOrigin
+}
+
+func (r *PeerCountByShard) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer count by shard: %v", err))
+		return err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
+	if err != nil {
+		return err
+	}
+
+	result := tx.QueryRow(`
+		INSERT INTO peerCountByShard (recordId, count, shard, timestamp)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id;
+	`, recordId, r.Count, r.Shard, r.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer count by shard: %v", result.Err()))
+		return result.Err()
+	}
+
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
+
+	return nil
+}
+
+func (r *PeerCountByShard) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "peerCountByShard", before)
+}
+
+func (r *PeerCountByOrigin) Process(ctx context.Context, db *sql.DB, errs *common.MetricErrors, data *types.TelemetryRequest) error {
+	if err := json.Unmarshal(*data.TelemetryData, &r); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error decoding peer count by origin: %v", err))
+		return err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	recordId, err := InsertTelemetryRecord(tx, &r.TelemetryRecord)
+	if err != nil {
+		return err
+	}
+
+	result := tx.QueryRow(`
+		INSERT INTO peerCountByOrigin (recordId, count, origin, timestamp)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id;
+	`, recordId, r.Count, r.Origin, r.Timestamp)
+	if result.Err() != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error saving peer count by origin: %v", result.Err()))
+		return result.Err()
+	}
+
+	var lastInsertId int
+	err = result.Scan(&lastInsertId)
+	if err != nil {
+		return err
+	}
+	r.ID = int(lastInsertId)
+
+	if err := tx.Commit(); err != nil {
+		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
+		return err
+	}
+
+	return nil
+}
+
+func (r *PeerCountByOrigin) Clean(db *sql.DB, before int64) (int64, error) {
+	return common.Cleanup(db, "peerCountByOrigin", before)
+}

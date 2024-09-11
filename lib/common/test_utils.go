@@ -38,6 +38,8 @@ func DropTables(db *sql.DB) {
 		"peercount",
 		"peerconnfailure",
 		"errorsendingenvelope",
+		"peerCountByShard",
+		"peerCountByOrigin",
 		"schema_migrations",
 	}
 
@@ -80,6 +82,16 @@ func DropTables(db *sql.DB) {
 	}
 
 	_, err = tx.Exec("DROP INDEX IF EXISTS peerConnFailure_unique")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = tx.Exec("DROP INDEX IF EXISTS peerCountByShard_unique")
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	}
+
+	_, err = tx.Exec("DROP INDEX IF EXISTS peerCountByOrigin_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}

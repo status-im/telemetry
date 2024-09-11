@@ -63,6 +63,8 @@ func main() {
 	server.RegisterMetric(types.ReceivedEnvelopeMetric, &metrics.ReceivedEnvelope{})
 	server.RegisterMetric(types.ReceivedMessagesMetric, &metrics.ReceivedMessage{})
 	server.RegisterMetric(types.SentEnvelopeMetric, &metrics.SentEnvelope{})
+	server.RegisterMetric(types.PeerCountByShardMetric, &metrics.PeerCountByShard{})
+	server.RegisterMetric(types.PeerCountByOriginMetric, &metrics.PeerCountByOrigin{})
 
 	server.Start(*port)
 }
