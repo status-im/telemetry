@@ -35,7 +35,7 @@ type TelemetryPushFilter struct {
 }
 
 func (r *TelemetryPushFilter) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO wakuPushFilter (protocol, ephemeral, timestamp, seenTimestamp, contentTopic, pubsubTopic, peerId, messageHash, errorMessage, extraData, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;")
+	stmt, err := db.Prepare("INSERT INTO wakuRequestResponse (protocol, ephemeral, timestamp, seenTimestamp, contentTopic, pubsubTopic, peerId, messageHash, errorMessage, extraData, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;")
 	if err != nil {
 		return err
 	}
