@@ -20,7 +20,6 @@ type WakuTelemetryRequest struct {
 }
 
 type TelemetryPushFilter struct {
-	ID            int    `json:"id"`
 	Protocol      string `json:"protocol"`
 	Ephemeral     bool   `json:"ephemeral"`
 	Timestamp     int64  `json:"timestamp"`
