@@ -249,16 +249,6 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush/filter metric: %v", err))
 				continue
 			}
-		case metrics.LightPushError:
-			var pushError metrics.TelemetryPushError
-			if err := json.Unmarshal(*data.TelemetryData, &pushError); err != nil {
-				errorDetails.Append(data.Id, fmt.Sprintf("Error decoding lightpush error metric: %v", err))
-				continue
-			}
-			if err := pushError.Put(s.DB); err != nil {
-				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush error metric: %v", err))
-				continue
-			}
 		case metrics.Generic:
 			var pushGeneric metrics.TelemetryGeneric
 			if err := json.Unmarshal(*data.TelemetryData, &pushGeneric); err != nil {
