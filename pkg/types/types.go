@@ -15,6 +15,8 @@ const (
 	PeerConnFailureMetric      TelemetryType = "PeerConnFailure"
 	PeerCountByShardMetric     TelemetryType = "PeerCountByShard"
 	PeerCountByOriginMetric    TelemetryType = "PeerCountByOrigin"
+	MessageCheckSuccessMetric  TelemetryType = "MessageCheckSuccess"
+	MessageCheckFailureMetric  TelemetryType = "MessageCheckFailure"
 )
 
 type Origin int64
@@ -132,4 +134,16 @@ type PeerCountByOrigin struct {
 	Count     int    `json:"count"`
 	Origin    Origin `json:"origin"`
 	Timestamp int64  `json:"timestamp"`
+}
+
+type MessageCheckSuccess struct {
+	TelemetryRecord
+	MessageHash string `json:"messageHash"`
+	Timestamp   int64  `json:"timestamp"`
+}
+
+type MessageCheckFailure struct {
+	TelemetryRecord
+	MessageHash string `json:"messageHash"`
+	Timestamp   int64  `json:"timestamp"`
 }

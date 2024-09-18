@@ -1,4 +1,4 @@
-ALTER TABLE IF NOT EXISTS wakuRequestResponse (
+CREATE TABLE IF NOT EXISTS wakuRequestResponse (
 	id SERIAL PRIMARY KEY,
 	protocol VARCHAR(50) NOT NULL,
 	ephemeral BOOLEAN NOT NULL,
