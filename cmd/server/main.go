@@ -66,5 +66,7 @@ func main() {
 	server.RegisterMetric(types.PeerCountByShardMetric, &metrics.PeerCountByShard{})
 	server.RegisterMetric(types.PeerCountByOriginMetric, &metrics.PeerCountByOrigin{})
 
+	server.RegisterMetric(types.MessageCheckSuccessMetric, &metrics.MessageCheckSuccess{})
+	server.RegisterMetric(types.MessageCheckFailureMetric, &metrics.MessageCheckFailure{})
 	server.Start(*port)
 }
