@@ -42,6 +42,7 @@ func DropTables(db *sql.DB) {
 		"peerCountByOrigin",
 		"messageCheckSuccess",
 		"messageCheckFailure",
+		"dialFailure",
 		"schema_migrations",
 	}
 

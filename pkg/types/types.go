@@ -17,6 +17,7 @@ const (
 	PeerCountByOriginMetric    TelemetryType = "PeerCountByOrigin"
 	MessageCheckSuccessMetric  TelemetryType = "MessageCheckSuccess"
 	MessageCheckFailureMetric  TelemetryType = "MessageCheckFailure"
+	DialFailureMetric          TelemetryType = "DialFailure"
 )
 
 type Origin int64
@@ -29,6 +30,19 @@ const (
 	DNSDiscovery
 	Rendezvous
 	PeerManager
+)
+
+type DialErrorType int
+
+const (
+	ErrorUnknown DialErrorType = iota
+	ErrorIOTimeout
+	ErrorConnectionRefused
+	ErrorRelayCircuitFailed
+	ErrorRelayNoReservation
+	ErrorSecurityNegotiationFailed
+	ErrorConcurrentDialSucceeded
+	ErrorConcurrentDialFailed
 )
 
 type TelemetryRequest struct {
@@ -146,4 +160,11 @@ type MessageCheckFailure struct {
 	TelemetryRecord
 	MessageHash string `json:"messageHash"`
 	Timestamp   int64  `json:"timestamp"`
+}
+type DialFailure struct {
+	TelemetryRecord
+	ErrorType DialErrorType `json:"errorType"`
+	ErrorMsg  string        `json:"errorMsg"`
+	Protocols string        `json:"protocols"`
+	Timestamp int64         `json:"timestamp"`
 }
