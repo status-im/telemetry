@@ -2,9 +2,7 @@ package telemetry
 
 import (
 	"context"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -186,9 +184,6 @@ func (s *Server) createProtocolStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-
-	peerIDHash := sha256.Sum256([]byte(protocolStats.PeerID))
-	protocolStats.PeerID = hex.EncodeToString(peerIDHash[:])
 
 	if err := protocolStats.Put(s.DB); err != nil {
 		s.logger.Error("failed to save protocol stats", zap.Error(err))
