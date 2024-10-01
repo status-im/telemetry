@@ -3,6 +3,7 @@ package metrics
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -79,18 +80,16 @@ type TelemetryGeneric struct {
 }
 
 func (r *TelemetryGeneric) Put(db *sql.DB) error {
-	stmt, err := db.Prepare("INSERT INTO wakuGeneric (peerId, metricType, contentTopic, pubsubTopic, genericData, errorMessage, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;")
+	r.CreatedAt = time.Now().Unix()
+	lastInsertId := 0
+	result, err := db.Query("INSERT INTO wakuGeneric (peerId, metricType, contentTopic, pubsubTopic, genericData, errorMessage, timestamp, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;", r.PeerID, r.MetricType, r.ContentTopic, r.PubsubTopic, r.GenericData, r.ErrorMessage, r.Timestamp, r.CreatedAt)
 	if err != nil {
 		return err
 	}
 
-	defer stmt.Close()
-
-	r.CreatedAt = time.Now().Unix()
-	lastInsertId := 0
-	err = stmt.QueryRow(r.PeerID, r.MetricType, r.ContentTopic, r.PubsubTopic, r.GenericData, r.ErrorMessage, r.Timestamp, r.CreatedAt).Scan(&lastInsertId)
+	err = result.Scan(&lastInsertId)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get last insert id: %w", err)
 	}
 	r.ID = lastInsertId
 

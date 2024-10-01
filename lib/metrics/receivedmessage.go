@@ -67,7 +67,7 @@ func (r *ReceivedMessage) Put(ctx context.Context, db *sql.DB) error {
 		r.MessageSize,
 		r.PubsubTopic)
 	if result.Err() != nil {
-		return fmt.Errorf("failed to prepare statement: %w", result.Err())
+		return fmt.Errorf("failed to execute the statement: %w", result.Err())
 	}
 
 	var lastInsertId int
