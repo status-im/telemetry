@@ -67,7 +67,7 @@ func main() {
 	server.RegisterMetric(types.PeerCountByOriginMetric, &metrics.PeerCountByOrigin{})
 	server.RegisterMetric(types.MissingMessageMetric, &metrics.MissingMessage{})
 	server.RegisterMetric(types.MissingRelevantMessageMetric, &metrics.MissingRelevantMessage{})
-
+	server.RegisterMetric(types.MessageDeliveryConfirmedMetric, &metrics.MessageDeliveryConfirmed{})
 	server.RegisterMetric(types.MessageCheckSuccessMetric, &metrics.MessageCheckSuccess{})
 	server.RegisterMetric(types.MessageCheckFailureMetric, &metrics.MessageCheckFailure{})
 	server.RegisterMetric(types.DialFailureMetric, &metrics.DialFailure{})

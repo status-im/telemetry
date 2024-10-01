@@ -12,7 +12,12 @@ type MissingRelevantMessage struct {
 	GenericMetric[types.MissingRelevantMessage]
 }
 
+type MessageDeliveryConfirmed struct {
+	GenericMetric[types.MessageDeliveryConfirmed]
+}
+
 var (
-	MissingMessageProcessor         = &MissingMessage{}
-	MissingRelevantMessageProcessor = &MissingRelevantMessage{}
+	MissingMessageProcessor           = &MissingMessage{}
+	MissingRelevantMessageProcessor   = &MissingRelevantMessage{}
+	MessageDeliveryConfirmedProcessor = &MessageDeliveryConfirmed{}
 )

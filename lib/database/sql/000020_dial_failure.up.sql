@@ -1,3 +1,8 @@
+CREATE TABLE IF NOT EXISTS dial_error_types (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS dialFailure (
     id SERIAL PRIMARY KEY,
     recordId INTEGER NOT NULL,
@@ -5,17 +10,12 @@ CREATE TABLE IF NOT EXISTS dialFailure (
     errorMsg TEXT,
     protocols TEXT NOT NULL,
     timestamp INTEGER NOT NULL,
-    CONSTRAINT dialFailure_unique UNIQUE (recordId, errorType, protocols, timestamp)
+    CONSTRAINT dialFailure_unique UNIQUE (recordId, errorType, protocols, timestamp),
+    CONSTRAINT fk_dialFailure_errorType FOREIGN KEY (errorType) REFERENCES dial_error_types(id)
 );
 
 ALTER TABLE dialFailure ADD CONSTRAINT fk_dialFailure_telemetryRecord
             FOREIGN KEY (recordId) REFERENCES telemetryRecord(id);
-
-
-CREATE TABLE IF NOT EXISTS dial_error_types (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
-);
 
 INSERT INTO dial_error_types (id, name)
 SELECT v.id, v.name
