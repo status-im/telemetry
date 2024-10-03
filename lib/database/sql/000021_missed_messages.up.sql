@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS missingMessages (
+CREATE TABLE IF NOT EXISTS missedMessages (
     id SERIAL PRIMARY KEY,
     messageHash TEXT NOT NULL,
     sentAt INTEGER NOT NULL,
@@ -7,18 +7,18 @@ CREATE TABLE IF NOT EXISTS missingMessages (
     recordId INTEGER NOT NULL
 );
 
-ALTER TABLE missingMessages ADD CONSTRAINT fk_missingMessages_telemetryRecord
+ALTER TABLE missedMessages ADD CONSTRAINT fk_missedMessages_telemetryRecord
             FOREIGN KEY (recordId) REFERENCES telemetryRecord(id);
 
-ALTER TABLE missingMessages 
-ADD CONSTRAINT missingMessages_unique 
+ALTER TABLE missedMessages 
+ADD CONSTRAINT missedMessages_unique 
 UNIQUE (
     recordId,
     messageHash,
     contentTopic
 );
 
-CREATE TABLE IF NOT EXISTS missingRelevantMessages (
+CREATE TABLE IF NOT EXISTS missedRelevantMessages (
     id SERIAL PRIMARY KEY,
     messageHash TEXT NOT NULL,
     sentAt INTEGER NOT NULL,
@@ -27,11 +27,11 @@ CREATE TABLE IF NOT EXISTS missingRelevantMessages (
     recordId INTEGER NOT NULL
 );
 
-ALTER TABLE missingRelevantMessages ADD CONSTRAINT fk_missingRelevantMessages_telemetryRecord
+ALTER TABLE missedRelevantMessages ADD CONSTRAINT fk_missedRelevantMessages_telemetryRecord
             FOREIGN KEY (recordId) REFERENCES telemetryRecord(id);
 
-ALTER TABLE missingRelevantMessages 
-ADD CONSTRAINT missingRelevantMessages_unique 
+ALTER TABLE missedRelevantMessages 
+ADD CONSTRAINT missedRelevantMessages_unique 
 UNIQUE (
     recordId,
     messageHash,
