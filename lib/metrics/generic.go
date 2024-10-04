@@ -78,12 +78,6 @@ func (g *GenericMetric[T]) Process(ctx context.Context, db *sql.DB, errs *common
 		return result.Err()
 	}
 
-	var lastInsertId int
-	err = result.Scan(&lastInsertId)
-	if err != nil {
-		return err
-	}
-
 	if err := tx.Commit(); err != nil {
 		errs.Append(data.ID, fmt.Sprintf("Error committing transaction: %v", err))
 		return err
