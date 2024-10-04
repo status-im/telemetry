@@ -20,7 +20,7 @@
 // 000018_waku_req_res.up.sql (462B)
 // 000019_message_check.up.sql (1.298kB)
 // 000020_dial_failure.up.sql (1.051kB)
-// 000021_missing_messages.up.sql (1.05kB)
+// 000021_missed_messages.up.sql (1.04kB)
 // 000022_message_delivery_confirmed.up.sql (430B)
 // doc.go (72B)
 
@@ -485,28 +485,28 @@ func _000020_dial_failureUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000020_dial_failure.up.sql", size: 1051, mode: os.FileMode(0644), modTime: time.Unix(1727806719, 0)}
+	info := bindataFileInfo{name: "000020_dial_failure.up.sql", size: 1051, mode: os.FileMode(0644), modTime: time.Unix(1727893821, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x8d, 0x41, 0x44, 0xb4, 0xd2, 0xbb, 0x67, 0x89, 0xc3, 0xaa, 0x43, 0xcc, 0x57, 0x30, 0x9d, 0xeb, 0x62, 0x97, 0x86, 0xff, 0x8e, 0x65, 0x62, 0x6a, 0xe8, 0xdf, 0x6e, 0x5d, 0xde, 0x9c, 0xf8, 0xae}}
 	return a, nil
 }
 
-var __000021_missing_messagesUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xdc\x92\xb1\x6e\xc2\x30\x10\x86\x77\x3f\xc5\x8d\x20\xf5\x0d\x3a\xb9\x70\x50\xab\xc1\x69\x2f\x8e\x04\x13\x0a\x89\x4b\xad\x12\x87\xc6\x4e\xa5\xbe\x7d\x55\x43\x16\x1b\xc4\x52\x75\xa8\xd7\xff\xf7\xdd\x77\x77\xff\x8c\x90\x2b\x04\xc5\x1f\x32\x04\xb1\x00\x99\x2b\xc0\xb5\x28\x54\x01\xad\x71\xce\xd8\xfd\x4a\x3b\x57\xed\xb5\x83\x09\x03\x00\x30\x0d\x14\x48\x82\x67\xf0\x4c\x62\xc5\x69\x03\x4f\xb8\xb9\x0b\x52\x7b\x72\x3e\x56\xee\x0d\x14\xae\x55\x28\x26\xcb\x2c\x3b\xc9\x4e\x5b\xcf\x3d\x08\xa9\x70\x89\x14\x89\x75\x67\xbd\xb6\x5e\x75\x47\x53\x5f\xfa\x7c\x1c\x76\x6e\xd8\x5d\x92\x01\x82\xa1\xd7\x75\xd7\x37\xa2\x49\xea\xb3\xe9\x3d\x63\x3c\x53\x48\xe7\x29\xe3\xb9\xf8\x7c\x0e\xb3\x5c\x16\x8a\xb8\x90\x0a\x5e\xdf\xb7\x91\x63\xeb\xf5\x41\xb7\xda\xf7\x5f\x14\x9a\x84\x7e\xe3\x5b\xe4\x84\x62\x29\x7f\xb6\x00\x93\x11\x62\x0a\x84\x0b\x24\x94\x33\x2c\x20\xfa\x3d\x31\xcd\x2d\x22\x16\x21\xc5\x3c\x83\x35\x1f\x83\x06\x56\x4a\xf1\x52\xe2\xf9\x30\x63\xef\xe4\x16\xe9\x82\xc3\x4a\x6e\x5f\x9e\xf4\x41\x7f\x56\xd6\xff\xd7\x04\x24\xf3\x5d\x4d\x42\xec\xfc\xab\x44\x24\x84\x57\x92\x91\xf0\xfd\x42\x42\xbe\x03\x00\x00\xff\xff\xd4\x9e\x36\x30\x1a\x04\x00\x00")
+var __000021_missed_messagesUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xdc\x52\xc1\x4e\xeb\x30\x10\xbc\xfb\x2b\xf6\xd8\x4a\xef\x0f\xde\xc9\xb4\xdb\x62\x91\x3a\xb0\x71\xa4\xf6\x54\xa5\xc9\x02\x11\x4d\x52\x62\x07\x89\xbf\x47\xb8\xcd\x01\x3b\xa8\x17\xc4\x01\x5f\x67\xbc\x3b\x3b\x33\x0b\x42\x69\x10\x8c\xbc\x49\x10\xd4\x0a\x74\x6a\x00\xb7\x2a\x33\x19\x34\xb5\xb5\x5c\x6d\xd8\xda\xe2\x89\x2d\xcc\x04\x00\x40\x5d\x41\x86\xa4\x64\x02\xf7\xa4\x36\x92\x76\x70\x87\xbb\x7f\x1e\x6a\xce\xcc\xdb\xc2\x3e\x83\xc1\xad\xf1\xb3\x74\x9e\x24\x67\xd8\x72\xeb\xa4\x03\xa5\x0d\xae\x91\x02\xb0\xec\x5a\xc7\xad\x33\xdd\xa9\x2e\xa7\x3e\x9f\x86\x83\x1d\x0e\x53\x30\x80\x27\xf4\x5c\x76\x7d\xa5\xaa\x68\xbe\x98\xff\x17\x42\x26\x06\xe9\x72\x64\x70\x96\x5c\x2e\x61\x91\xea\xcc\x90\x54\xda\xc0\xe3\xcb\xfe\x2b\x61\xef\xf8\xc8\x0d\xbb\xfe\x9d\xfc\x0a\xbf\x6d\x7c\xab\x94\x50\xad\xf5\xa7\x07\x30\x1b\x25\xcc\x81\x70\x85\x84\x7a\x81\x19\x04\xbf\x67\x75\x75\x45\x8f\x08\x04\x05\x6a\x86\xb6\x7e\x1d\x18\x44\xae\xd5\x43\x8e\x97\x50\xc6\xcd\x51\x0e\xb1\xb9\xde\x8e\xab\xa1\x13\x1f\xf9\xad\x68\xdd\x1f\x0d\x3f\x3a\xef\xbb\x12\x84\xc4\x5f\x2a\x43\xa4\x6f\xba\x14\x91\xba\x1f\x28\xc7\x47\x00\x00\x00\xff\xff\x14\x0b\xfe\xcb\x10\x04\x00\x00")
 
-func _000021_missing_messagesUpSqlBytes() ([]byte, error) {
+func _000021_missed_messagesUpSqlBytes() ([]byte, error) {
 	return bindataRead(
-		__000021_missing_messagesUpSql,
-		"000021_missing_messages.up.sql",
+		__000021_missed_messagesUpSql,
+		"000021_missed_messages.up.sql",
 	)
 }
 
-func _000021_missing_messagesUpSql() (*asset, error) {
-	bytes, err := _000021_missing_messagesUpSqlBytes()
+func _000021_missed_messagesUpSql() (*asset, error) {
+	bytes, err := _000021_missed_messagesUpSqlBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000021_missing_messages.up.sql", size: 1050, mode: os.FileMode(0644), modTime: time.Unix(1727738284, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x66, 0x4b, 0x66, 0x41, 0x3a, 0x94, 0xb3, 0x90, 0x19, 0x67, 0x35, 0xf6, 0xc9, 0x91, 0x4a, 0x70, 0x96, 0x83, 0xf4, 0x23, 0x24, 0xea, 0x4b, 0x1d, 0x24, 0xb0, 0x39, 0xb0, 0x73, 0x58, 0xf0, 0x4d}}
+	info := bindataFileInfo{name: "000021_missed_messages.up.sql", size: 1040, mode: os.FileMode(0644), modTime: time.Unix(1727991134, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x84, 0x73, 0xf3, 0xde, 0xe4, 0x51, 0xdb, 0x26, 0x30, 0x7d, 0xe7, 0x6b, 0x1f, 0x5b, 0xbe, 0x9b, 0xc6, 0xb5, 0x80, 0x9f, 0xc, 0x71, 0x2c, 0xf8, 0xa0, 0x50, 0xdd, 0xa1, 0x3d, 0x35, 0x7, 0x94}}
 	return a, nil
 }
 
@@ -525,7 +525,7 @@ func _000022_message_delivery_confirmedUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000022_message_delivery_confirmed.up.sql", size: 430, mode: os.FileMode(0644), modTime: time.Unix(1727749551, 0)}
+	info := bindataFileInfo{name: "000022_message_delivery_confirmed.up.sql", size: 430, mode: os.FileMode(0644), modTime: time.Unix(1727893821, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc5, 0x7f, 0xab, 0xa9, 0xe9, 0x88, 0x53, 0xad, 0x22, 0x1c, 0xb, 0x83, 0xdf, 0xbf, 0xf2, 0xb4, 0x45, 0xed, 0xb0, 0xed, 0x77, 0x38, 0x35, 0xdc, 0x1c, 0xde, 0x19, 0x2, 0x69, 0x3, 0x11, 0x6d}}
 	return a, nil
 }
@@ -661,7 +661,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000018_waku_req_res.up.sql":               _000018_waku_req_resUpSql,
 	"000019_message_check.up.sql":              _000019_message_checkUpSql,
 	"000020_dial_failure.up.sql":               _000020_dial_failureUpSql,
-	"000021_missing_messages.up.sql":           _000021_missing_messagesUpSql,
+	"000021_missed_messages.up.sql":            _000021_missed_messagesUpSql,
 	"000022_message_delivery_confirmed.up.sql": _000022_message_delivery_confirmedUpSql,
 	"doc.go": docGo,
 }
@@ -732,7 +732,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000018_waku_req_res.up.sql":               {_000018_waku_req_resUpSql, map[string]*bintree{}},
 	"000019_message_check.up.sql":              {_000019_message_checkUpSql, map[string]*bintree{}},
 	"000020_dial_failure.up.sql":               {_000020_dial_failureUpSql, map[string]*bintree{}},
-	"000021_missing_messages.up.sql":           {_000021_missing_messagesUpSql, map[string]*bintree{}},
+	"000021_missed_messages.up.sql":            {_000021_missed_messagesUpSql, map[string]*bintree{}},
 	"000022_message_delivery_confirmed.up.sql": {_000022_message_delivery_confirmedUpSql, map[string]*bintree{}},
 	"doc.go": {docGo, map[string]*bintree{}},
 }}

@@ -43,8 +43,8 @@ func DropTables(db *sql.DB) {
 		"messageCheckSuccess",
 		"messageCheckFailure",
 		"dialFailure",
-		"missingmessages",
-		"missingrelevantmessages",
+		"missedMessages",
+		"missedrelevantmessages",
 		"messageDeliveryConfirmed",
 		"schema_migrations",
 	}
@@ -102,7 +102,7 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = tx.Exec("DROP INDEX IF EXISTS missingMessages_unique")
+	_, err = tx.Exec("DROP INDEX IF EXISTS missedMessages_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
@@ -117,7 +117,7 @@ func DropTables(db *sql.DB) {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
 
-	_, err = tx.Exec("DROP INDEX IF EXISTS missingRelevantMessages_unique")
+	_, err = tx.Exec("DROP INDEX IF EXISTS missedRelevantMessages_unique")
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when dropping the index", err)
 	}
