@@ -19,8 +19,8 @@ const (
 	MessageCheckFailureMetric      TelemetryType = "MessageCheckFailure"
 	DialFailureMetric              TelemetryType = "DialFailure"
 	StoreConfrimationErrorMetric   TelemetryType = "StoreConfrimationError"
-	MissedMessageMetric            TelemetryType = "MissedMessage"
-	MissedRelevantMessageMetric    TelemetryType = "MissedRelevantMessage"
+	MissedMessageMetric            TelemetryType = "MissedMessages"
+	MissedRelevantMessageMetric    TelemetryType = "MissedRelevantMessages"
 	MessageDeliveryConfirmedMetric TelemetryType = "MessageDeliveryConfirmed"
 )
 
@@ -175,7 +175,6 @@ type DialFailure struct {
 
 type MissedMessage struct {
 	TelemetryRecord
-	ID           int    `json:"id"`
 	ContentTopic string `json:"contentTopic"`
 	MessageHash  string `json:"messageHash"`
 	SentAt       int64  `json:"sentAt"`
@@ -184,7 +183,6 @@ type MissedMessage struct {
 
 type MissedRelevantMessage struct {
 	TelemetryRecord
-	ID           int    `json:"id"`
 	ContentTopic string `json:"contentTopic"`
 	MessageHash  string `json:"messageHash"`
 	SentAt       int64  `json:"sentAt"`
@@ -193,7 +191,6 @@ type MissedRelevantMessage struct {
 
 type MessageDeliveryConfirmed struct {
 	TelemetryRecord
-	ID          int    `json:"id"`
 	MessageHash string `json:"messageHash"`
 	Timestamp   int64  `json:"timestamp"`
 }
