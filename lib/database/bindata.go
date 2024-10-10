@@ -22,6 +22,7 @@
 // 000020_dial_failure.up.sql (1.051kB)
 // 000021_missed_messages.up.sql (1.04kB)
 // 000022_message_delivery_confirmed.up.sql (430B)
+// 000023_dial_failure_types.up.sql (602B)
 // doc.go (72B)
 
 package database
@@ -505,7 +506,7 @@ func _000021_missed_messagesUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000021_missed_messages.up.sql", size: 1040, mode: os.FileMode(0644), modTime: time.Unix(1727991134, 0)}
+	info := bindataFileInfo{name: "000021_missed_messages.up.sql", size: 1040, mode: os.FileMode(0644), modTime: time.Unix(1728017907, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x84, 0x73, 0xf3, 0xde, 0xe4, 0x51, 0xdb, 0x26, 0x30, 0x7d, 0xe7, 0x6b, 0x1f, 0x5b, 0xbe, 0x9b, 0xc6, 0xb5, 0x80, 0x9f, 0xc, 0x71, 0x2c, 0xf8, 0xa0, 0x50, 0xdd, 0xa1, 0x3d, 0x35, 0x7, 0x94}}
 	return a, nil
 }
@@ -527,6 +528,26 @@ func _000022_message_delivery_confirmedUpSql() (*asset, error) {
 
 	info := bindataFileInfo{name: "000022_message_delivery_confirmed.up.sql", size: 430, mode: os.FileMode(0644), modTime: time.Unix(1727893821, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc5, 0x7f, 0xab, 0xa9, 0xe9, 0x88, 0x53, 0xad, 0x22, 0x1c, 0xb, 0x83, 0xdf, 0xbf, 0xf2, 0xb4, 0x45, 0xed, 0xb0, 0xed, 0x77, 0x38, 0x35, 0xdc, 0x1c, 0xde, 0x19, 0x2, 0x69, 0x3, 0x11, 0x6d}}
+	return a, nil
+}
+
+var __000023_dial_failure_typesUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x92\xcf\xce\x9b\x30\x10\xc4\xef\x3c\xc5\xdc\x00\x09\x7d\xfd\xe8\xff\xaa\xea\x21\x4d\x1d\x05\x29\x85\x08\x93\xb6\xb7\xc8\x32\x9b\xc8\x0a\xd8\x91\x31\xb4\xbc\x7d\x65\x12\x91\x34\x6d\xaf\xe3\x9f\x47\xb3\xb3\x9b\xe5\x9c\x95\x15\xb2\xbc\x2a\x50\x2b\xd1\xec\xc9\x5a\x63\xf7\x6e\x3c\x53\x87\x48\xd5\x09\xb4\x68\x29\x0e\x38\xdb\xb0\x65\x85\xe1\xc9\x4b\xc3\x93\x17\x83\x55\x59\x7c\x45\xf4\x6d\xb1\xd9\x31\x1e\x00\x40\xf4\x9c\x20\xdc\xe9\x93\x36\x3f\x75\x18\x27\x17\x2d\x4d\x10\x66\x2f\x0a\x54\xaa\x25\xd3\xbb\x59\x7f\x99\x20\x5c\x1a\xad\x49\x3a\x65\x34\x4a\x3a\xf4\x1d\xd5\xf3\xf3\xab\x04\x61\x49\x8d\x18\xb1\x54\x56\xf6\xca\x61\x25\x54\x73\x07\xbc\x9e\x81\xdc\xa0\xa4\x8e\xec\x20\xbc\xd3\x0c\xbc\x49\x10\x72\x92\xbd\x55\x6e\x44\x4e\x47\xe3\xd4\x04\x3c\x1a\xbd\xbd\x04\x91\xbd\xb5\xa4\x1d\xbe\x28\xd1\x80\xf7\x52\x12\xd5\x77\xd4\xbb\x7f\x50\x0f\x46\xef\xff\x98\xa8\xc3\x96\x2c\xb2\x2d\x36\xaa\x55\x0e\xec\xd7\x83\xe1\x07\x1f\xcf\x59\x12\xed\x94\xfe\x56\x4c\xfa\x3c\x4f\x56\x52\x67\x7a\x2b\xe9\x7f\x1e\xa9\x2f\x97\xf9\x8d\xa1\x38\x93\x56\xfa\x88\xb5\x39\xe3\x6a\xeb\x7c\x2f\x8d\x18\x6f\xb8\xef\x7c\x4a\xfe\x59\xc8\x93\x39\x1c\xc2\x38\x88\xb1\xe0\x18\xee\x36\xfd\x7d\xcd\x4a\x86\xbc\xa8\xc0\x7e\x64\xbc\xe2\x88\xa6\xcf\xd7\x03\x48\x31\x6d\xfd\xaf\x53\xb9\xfc\x52\x35\x3e\x4d\x37\x12\xc4\x1f\x7f\x07\x00\x00\xff\xff\xf5\x32\xb1\xff\x5a\x02\x00\x00")
+
+func _000023_dial_failure_typesUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000023_dial_failure_typesUpSql,
+		"000023_dial_failure_types.up.sql",
+	)
+}
+
+func _000023_dial_failure_typesUpSql() (*asset, error) {
+	bytes, err := _000023_dial_failure_typesUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000023_dial_failure_types.up.sql", size: 602, mode: os.FileMode(0644), modTime: time.Unix(1728081895, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x33, 0xbf, 0xa6, 0x33, 0x34, 0x60, 0x39, 0x31, 0xd3, 0xa1, 0x47, 0x50, 0x95, 0x34, 0x39, 0xc8, 0xd9, 0xb0, 0xb4, 0x31, 0x4e, 0x32, 0x2e, 0x99, 0xbb, 0x99, 0x3a, 0x9c, 0xa0, 0x57, 0x59, 0xbe}}
 	return a, nil
 }
 
@@ -663,7 +684,8 @@ var _bindata = map[string]func() (*asset, error){
 	"000020_dial_failure.up.sql":               _000020_dial_failureUpSql,
 	"000021_missed_messages.up.sql":            _000021_missed_messagesUpSql,
 	"000022_message_delivery_confirmed.up.sql": _000022_message_delivery_confirmedUpSql,
-	"doc.go": docGo,
+	"000023_dial_failure_types.up.sql":         _000023_dial_failure_typesUpSql,
+	"doc.go":                                   docGo,
 }
 
 // AssetDebug is true if the assets were built with the debug flag enabled.
@@ -734,7 +756,8 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000020_dial_failure.up.sql":               {_000020_dial_failureUpSql, map[string]*bintree{}},
 	"000021_missed_messages.up.sql":            {_000021_missed_messagesUpSql, map[string]*bintree{}},
 	"000022_message_delivery_confirmed.up.sql": {_000022_message_delivery_confirmedUpSql, map[string]*bintree{}},
-	"doc.go": {docGo, map[string]*bintree{}},
+	"000023_dial_failure_types.up.sql":         {_000023_dial_failure_typesUpSql, map[string]*bintree{}},
+	"doc.go":                                   {docGo, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.

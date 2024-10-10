@@ -47,6 +47,11 @@ const (
 	ErrorSecurityNegotiationFailed
 	ErrorConcurrentDialSucceeded
 	ErrorConcurrentDialFailed
+	ErrorConnectionsPerIPLimitExceeded
+	ErrorStreamReset
+	ErrorRelayResourceLimitExceeded
+	ErrorOpeningHopStreamToRelay
+	ErrorDialBackoff
 )
 
 type TelemetryRequest struct {
