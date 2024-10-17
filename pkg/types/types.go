@@ -173,7 +173,7 @@ type DialFailure struct {
 	Timestamp int64         `json:"timestamp"`
 }
 
-type MissedMessage struct {
+type MissedMessages struct {
 	TelemetryRecord
 	ContentTopic string `json:"contentTopic"`
 	MessageHash  string `json:"messageHash"`
@@ -181,7 +181,7 @@ type MissedMessage struct {
 	PubsubTopic  string `json:"pubsubTopic"`
 }
 
-type MissedRelevantMessage struct {
+type MissedRelevantMessages struct {
 	TelemetryRecord
 	ContentTopic string `json:"contentTopic"`
 	MessageHash  string `json:"messageHash"`
