@@ -4,12 +4,12 @@ import (
 	"github.com/status-im/telemetry/pkg/types"
 )
 
-type MissedMessage struct {
-	GenericMetric[types.MissedMessage]
+type MissedMessages struct {
+	GenericMetric[types.MissedMessages]
 }
 
-type MissedRelevantMessage struct {
-	GenericMetric[types.MissedRelevantMessage]
+type MissedRelevantMessages struct {
+	GenericMetric[types.MissedRelevantMessages]
 }
 
 type MessageDeliveryConfirmed struct {
@@ -17,7 +17,7 @@ type MessageDeliveryConfirmed struct {
 }
 
 var (
-	MissedMessageProcessor            = &MissedMessage{}
-	MissedRelevantMessageProcessor    = &MissedRelevantMessage{}
+	MissedMessagesProcessor           = &MissedMessages{}
+	MissedRelevantMessagesProcessor   = &MissedRelevantMessages{}
 	MessageDeliveryConfirmedProcessor = &MessageDeliveryConfirmed{}
 )
