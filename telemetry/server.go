@@ -243,7 +243,7 @@ func (s *Server) createWakuTelemetry(w http.ResponseWriter, r *http.Request) {
 			}
 			if err := pushFilter.Put(s.DB); err != nil {
 				if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-					errorDetails.Append(data.Id, "Error saving lightpush/filter metric: Duplicate key value violates unique constraint")
+					errorDetails.Append(data.Id, "Error saving lightpush/filter metric: Duplicate key value violates unique constraint", true)
 					continue
 				}
 				errorDetails.Append(data.Id, fmt.Sprintf("Error saving lightpush/filter metric: %v", err))

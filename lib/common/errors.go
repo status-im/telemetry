@@ -23,8 +23,8 @@ func NewMetricErrors(logger *zap.Logger) *MetricErrors {
 	}
 }
 
-func (me *MetricErrors) Append(id int, err string) {
-	if me.logger != nil {
+func (me *MetricErrors) Append(id int, err string, skipLogging ...bool) {
+	if me.logger != nil && (len(skipLogging) == 0 || !skipLogging[0]) {
 		me.logger.Error(err)
 	}
 	me.mutex.Lock()
