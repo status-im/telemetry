@@ -127,6 +127,7 @@ type ProtocolStats struct {
 	FilterPush      Metric `json:"filter-push"`
 	FilterSubscribe Metric `json:"filter-subscribe"`
 	Lightpush       Metric `json:"lightpush"`
+	Total           Metric `json:"total"`
 }
 
 type ReceivedMessage struct {

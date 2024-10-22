@@ -55,6 +55,11 @@ func (r *ProtocolStats) Put(db *sql.DB) error {
 		return err
 	}
 
+	err = r.insertRate(db, "total", r.Total)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
