@@ -49,7 +49,7 @@ func main() {
 	server := telemetry.NewServer(db, logger, *retention)
 
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins: []string{"https://lab.waku.org"},
+		AllowedOrigins: []string{"https://lab.waku.org", "https://buddybook.fun"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"*"},
 	})
