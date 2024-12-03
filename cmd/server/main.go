@@ -71,5 +71,6 @@ func main() {
 	server.RegisterMetric(types.MessageCheckSuccessMetric, &metrics.MessageCheckSuccess{})
 	server.RegisterMetric(types.MessageCheckFailureMetric, &metrics.MessageCheckFailure{})
 	server.RegisterMetric(types.DialFailureMetric, &metrics.DialFailure{})
+	server.RegisterMetric(types.SentMessageTotalMetric, &metrics.SentMessageTotalMetric{})
 	server.Start(*port)
 }

@@ -24,6 +24,7 @@
 // 000022_message_delivery_confirmed.up.sql (430B)
 // 000023_dial_failure_types.up.sql (602B)
 // 000024_waku_constraint.up.sql (169B)
+// 000025_sent_message_total.up.sql (381B)
 // doc.go (72B)
 
 package database
@@ -407,7 +408,7 @@ func _000016_common_fieldsUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000016_common_fields.up.sql", size: 5018, mode: os.FileMode(0644), modTime: time.Unix(1725580850, 0)}
+	info := bindataFileInfo{name: "000016_common_fields.up.sql", size: 5018, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x28, 0x5b, 0x88, 0xb7, 0x2d, 0xe1, 0x6a, 0xb4, 0x0, 0x34, 0x46, 0x1, 0xf4, 0x6a, 0xf8, 0xc6, 0x4c, 0x29, 0x4d, 0x60, 0x7d, 0x16, 0xa2, 0xed, 0x25, 0xf7, 0xc4, 0x27, 0xb7, 0x0, 0xfc, 0x4e}}
 	return a, nil
 }
@@ -427,7 +428,7 @@ func _000017_peer_count_shard_originUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000017_peer_count_shard_origin.up.sql", size: 1263, mode: os.FileMode(0644), modTime: time.Unix(1727493408, 0)}
+	info := bindataFileInfo{name: "000017_peer_count_shard_origin.up.sql", size: 1263, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x42, 0xe9, 0x98, 0xa, 0xfc, 0xf1, 0x85, 0xe9, 0xd, 0x30, 0x30, 0xda, 0x15, 0x15, 0x3a, 0xf6, 0xf8, 0x87, 0xa, 0x16, 0x69, 0x20, 0x6b, 0x8b, 0xec, 0x27, 0x4c, 0xa, 0x49, 0x65, 0x2a, 0xe8}}
 	return a, nil
 }
@@ -447,7 +448,7 @@ func _000018_waku_req_resUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000018_waku_req_res.up.sql", size: 462, mode: os.FileMode(0644), modTime: time.Unix(1727493408, 0)}
+	info := bindataFileInfo{name: "000018_waku_req_res.up.sql", size: 462, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x33, 0xae, 0xe5, 0x47, 0xbb, 0x79, 0x2a, 0x7c, 0xc7, 0x15, 0x9a, 0xd0, 0x75, 0xc1, 0x3d, 0xc9, 0x76, 0xb8, 0xc, 0x9c, 0xef, 0x63, 0xcb, 0xd, 0x5f, 0xe8, 0xee, 0xd9, 0x9b, 0xb5, 0x1a, 0x37}}
 	return a, nil
 }
@@ -467,7 +468,7 @@ func _000019_message_checkUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000019_message_check.up.sql", size: 1298, mode: os.FileMode(0644), modTime: time.Unix(1727493408, 0)}
+	info := bindataFileInfo{name: "000019_message_check.up.sql", size: 1298, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x15, 0x17, 0x41, 0x93, 0x56, 0x36, 0x3d, 0x52, 0x0, 0x77, 0xbb, 0x1b, 0xd7, 0x88, 0x89, 0xcf, 0x48, 0x7b, 0xd5, 0xc5, 0x2c, 0xad, 0x2c, 0x33, 0xe4, 0x43, 0x1d, 0x18, 0xe8, 0xc5, 0xfd, 0xe3}}
 	return a, nil
 }
@@ -487,7 +488,7 @@ func _000020_dial_failureUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000020_dial_failure.up.sql", size: 1051, mode: os.FileMode(0644), modTime: time.Unix(1727893821, 0)}
+	info := bindataFileInfo{name: "000020_dial_failure.up.sql", size: 1051, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x8d, 0x41, 0x44, 0xb4, 0xd2, 0xbb, 0x67, 0x89, 0xc3, 0xaa, 0x43, 0xcc, 0x57, 0x30, 0x9d, 0xeb, 0x62, 0x97, 0x86, 0xff, 0x8e, 0x65, 0x62, 0x6a, 0xe8, 0xdf, 0x6e, 0x5d, 0xde, 0x9c, 0xf8, 0xae}}
 	return a, nil
 }
@@ -507,7 +508,7 @@ func _000021_missed_messagesUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000021_missed_messages.up.sql", size: 1040, mode: os.FileMode(0644), modTime: time.Unix(1728017907, 0)}
+	info := bindataFileInfo{name: "000021_missed_messages.up.sql", size: 1040, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x84, 0x73, 0xf3, 0xde, 0xe4, 0x51, 0xdb, 0x26, 0x30, 0x7d, 0xe7, 0x6b, 0x1f, 0x5b, 0xbe, 0x9b, 0xc6, 0xb5, 0x80, 0x9f, 0xc, 0x71, 0x2c, 0xf8, 0xa0, 0x50, 0xdd, 0xa1, 0x3d, 0x35, 0x7, 0x94}}
 	return a, nil
 }
@@ -527,7 +528,7 @@ func _000022_message_delivery_confirmedUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000022_message_delivery_confirmed.up.sql", size: 430, mode: os.FileMode(0644), modTime: time.Unix(1727893821, 0)}
+	info := bindataFileInfo{name: "000022_message_delivery_confirmed.up.sql", size: 430, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc5, 0x7f, 0xab, 0xa9, 0xe9, 0x88, 0x53, 0xad, 0x22, 0x1c, 0xb, 0x83, 0xdf, 0xbf, 0xf2, 0xb4, 0x45, 0xed, 0xb0, 0xed, 0x77, 0x38, 0x35, 0xdc, 0x1c, 0xde, 0x19, 0x2, 0x69, 0x3, 0x11, 0x6d}}
 	return a, nil
 }
@@ -547,7 +548,7 @@ func _000023_dial_failure_typesUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000023_dial_failure_types.up.sql", size: 602, mode: os.FileMode(0644), modTime: time.Unix(1729550265, 0)}
+	info := bindataFileInfo{name: "000023_dial_failure_types.up.sql", size: 602, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x33, 0xbf, 0xa6, 0x33, 0x34, 0x60, 0x39, 0x31, 0xd3, 0xa1, 0x47, 0x50, 0x95, 0x34, 0x39, 0xc8, 0xd9, 0xb0, 0xb4, 0x31, 0x4e, 0x32, 0x2e, 0x99, 0xbb, 0x99, 0x3a, 0x9c, 0xa0, 0x57, 0x59, 0xbe}}
 	return a, nil
 }
@@ -567,8 +568,28 @@ func _000024_waku_constraintUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000024_waku_constraint.up.sql", size: 169, mode: os.FileMode(0644), modTime: time.Unix(1731322740, 0)}
+	info := bindataFileInfo{name: "000024_waku_constraint.up.sql", size: 169, mode: os.FileMode(0644), modTime: time.Unix(1732637849, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xd8, 0xb4, 0xd1, 0x7d, 0x2e, 0x14, 0xb, 0x5e, 0x79, 0x6b, 0xdb, 0x3e, 0xd9, 0x87, 0xc7, 0xc8, 0x96, 0xbe, 0x21, 0x5e, 0x33, 0xb3, 0x43, 0x9d, 0xce, 0x15, 0x36, 0xe4, 0x8a, 0xdd, 0xb, 0x3b}}
+	return a, nil
+}
+
+var __000025_sent_message_totalUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x90\xc1\x4e\xc3\x30\x10\x44\xef\xf9\x8a\x39\x26\x52\xff\xa0\x27\x93\x6e\x2a\x8b\xd4\x81\xf5\x46\xa2\xa7\x2a\x22\x0b\xb2\x68\x5a\x88\xdd\x03\x7c\x3d\x22\x50\x15\x35\xaa\xaf\x4f\x9e\x79\xb3\x25\x93\x11\x82\x98\xbb\x9a\x60\x2b\xb8\x46\x40\x4f\xd6\x8b\x47\xd4\x43\xda\x68\x8c\xdd\xab\xca\x31\x75\x7b\xe4\x19\x00\x84\x1e\x9e\xd8\x9a\x1a\x0f\x6c\x37\x86\xb7\xb8\xa7\xed\x62\x42\xa3\x3e\x1f\xc7\xde\xf6\xb0\x4e\x68\x4d\x3c\xa5\xb9\xb6\xae\x7f\x71\x0c\x5f\x7a\x03\xa5\x30\x68\x4c\xdd\xf0\x7e\x83\x97\x8d\xf3\xc2\xc6\x3a\x99\x69\xed\x4e\x87\xf0\x71\x52\xb4\xce\x3e\xb6\x84\xfc\x2c\xb1\xb8\x84\x16\x59\xb1\xcc\x32\x53\x0b\xf1\xdf\xd2\xd9\x36\xb3\x5a\xfd\x2f\x79\x79\xdb\xcd\x7a\x92\xee\x75\xd0\x34\x7e\xf2\xd4\x30\x79\x9d\x5f\xd5\x30\xd9\xb5\xfb\x39\xc5\xc5\xa0\x00\x53\x45\x4c\xae\x24\x8f\xab\xdf\x79\xe8\x8b\xe5\x77\x00\x00\x00\xff\xff\xcb\x93\xfd\x89\x7d\x01\x00\x00")
+
+func _000025_sent_message_totalUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000025_sent_message_totalUpSql,
+		"000025_sent_message_total.up.sql",
+	)
+}
+
+func _000025_sent_message_totalUpSql() (*asset, error) {
+	bytes, err := _000025_sent_message_totalUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000025_sent_message_total.up.sql", size: 381, mode: os.FileMode(0644), modTime: time.Unix(1733169096, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf2, 0x5, 0x4d, 0x12, 0xb, 0x97, 0x10, 0x5, 0xce, 0x7f, 0xf5, 0xbd, 0xcf, 0x41, 0x48, 0x97, 0xcf, 0x28, 0x96, 0x8e, 0x24, 0xe0, 0xbe, 0x63, 0x46, 0xe6, 0x71, 0x25, 0x94, 0x30, 0x2a, 0xb4}}
 	return a, nil
 }
 
@@ -707,6 +728,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000022_message_delivery_confirmed.up.sql": _000022_message_delivery_confirmedUpSql,
 	"000023_dial_failure_types.up.sql":         _000023_dial_failure_typesUpSql,
 	"000024_waku_constraint.up.sql":            _000024_waku_constraintUpSql,
+	"000025_sent_message_total.up.sql":         _000025_sent_message_totalUpSql,
 	"doc.go":                                   docGo,
 }
 
@@ -780,6 +802,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000022_message_delivery_confirmed.up.sql": {_000022_message_delivery_confirmedUpSql, map[string]*bintree{}},
 	"000023_dial_failure_types.up.sql":         {_000023_dial_failure_typesUpSql, map[string]*bintree{}},
 	"000024_waku_constraint.up.sql":            {_000024_waku_constraintUpSql, map[string]*bintree{}},
+	"000025_sent_message_total.up.sql":         {_000025_sent_message_totalUpSql, map[string]*bintree{}},
 	"doc.go":                                   {docGo, map[string]*bintree{}},
 }}
 
