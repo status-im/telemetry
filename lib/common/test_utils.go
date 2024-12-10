@@ -47,6 +47,7 @@ func DropTables(db *sql.DB) {
 		"missedrelevantmessages",
 		"messageDeliveryConfirmed",
 		"sentMessageTotal",
+		"rawMessageByType",
 		"schema_migrations",
 	}
 
@@ -58,84 +59,30 @@ func DropTables(db *sql.DB) {
 
 	}
 
-	_, err = tx.Exec("DROP INDEX IF EXISTS receivedEnvelopes")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	indexes := []string{
+		"receivedEnvelopes",
+		"receivedMessageAggregated_runAt",
+		"protocolStatsTotals_idx1",
+		"peerCount_unique",
+		"receivedMessages_unique",
+		"peerConnFailure_unique",
+		"peerCountByShard_unique",
+		"peerCountByOrigin_unique",
+		"missedMessages_unique",
+		"messageCheckSuccess_unique",
+		"messageCheckFailure_unique",
+		"missedRelevantMessages_unique",
+		"messageDeliveryConfirmed_unique",
+		"dialFailure_unique",
+		"sentMessageTotal_unique",
+		"rawMessageByType_unique",
 	}
 
-	_, err = tx.Exec("DROP INDEX IF EXISTS receivedMessageAggregated_runAt")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS protocolStatsRate_idx1")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS protocolStatsTotals_idx1")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS peerCount_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS receivedMessages_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS peerConnFailure_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS peerCountByShard_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS peerCountByOrigin_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS missedMessages_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS messageCheckSuccess_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS messageCheckFailure_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS missedRelevantMessages_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS messageDeliveryConfirmed_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS dialFailure_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
-	}
-
-	_, err = tx.Exec("DROP INDEX IF EXISTS sentMessageTotal_unique")
-	if err != nil {
-		log.Fatalf("an error '%s' was not expected when dropping the index", err)
+	for _, index := range indexes {
+		_, err := tx.Exec(fmt.Sprintf("DROP INDEX IF EXISTS %s", index))
+		if err != nil {
+			log.Fatalf("an error '%s' was not expected when dropping the index", err)
+		}
 	}
 
 	_, err = tx.Exec("DROP TABLE IF EXISTS schema_migrations")

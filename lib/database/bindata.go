@@ -25,6 +25,7 @@
 // 000023_dial_failure_types.up.sql (602B)
 // 000024_waku_constraint.up.sql (169B)
 // 000025_sent_message_total.up.sql (381B)
+// 000026_raw_message_by_type.up.sql (412B)
 // doc.go (72B)
 
 package database
@@ -588,8 +589,28 @@ func _000025_sent_message_totalUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "000025_sent_message_total.up.sql", size: 381, mode: os.FileMode(0644), modTime: time.Unix(1733169096, 0)}
+	info := bindataFileInfo{name: "000025_sent_message_total.up.sql", size: 381, mode: os.FileMode(0644), modTime: time.Unix(1733438931, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf2, 0x5, 0x4d, 0x12, 0xb, 0x97, 0x10, 0x5, 0xce, 0x7f, 0xf5, 0xbd, 0xcf, 0x41, 0x48, 0x97, 0xcf, 0x28, 0x96, 0x8e, 0x24, 0xe0, 0xbe, 0x63, 0x46, 0xe6, 0x71, 0x25, 0x94, 0x30, 0x2a, 0xb4}}
+	return a, nil
+}
+
+var __000026_raw_message_by_typeUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x90\xc1\x6a\xc3\x30\x0c\x40\xef\xf9\x0a\x1d\x13\xe8\x1f\xf4\xe4\xa6\x4a\x11\x73\x9d\x4d\x56\xa0\x3d\x95\xb0\x68\xc3\x6c\xd9\xba\x24\x65\x64\x5f\x3f\xe6\xae\xb4\x34\xc4\xd7\x87\xf4\x9e\x95\x33\x1a\x41\x10\xb3\xb2\x08\x54\x80\x2b\x05\x70\x47\x5e\x3c\x74\xf5\xf7\x56\xfb\xbe\x7e\xd5\xd5\x28\xe3\x51\x21\x4d\x00\x00\x42\x03\x1e\x99\x8c\x85\x47\xa6\xad\xe1\x3d\x3c\xe0\x7e\x11\x51\xa7\xcf\x9f\x5d\x43\x0d\x90\x13\xdc\x20\xc7\x6d\xae\xb2\xf6\x8c\xfb\xf0\xa3\x33\xa8\x3d\x8b\xa2\x46\x70\x27\x77\x78\x08\xad\xf6\x43\xdd\x1e\x67\xc6\xf3\xd2\x79\x61\x43\x4e\x26\xd5\x87\xd3\x47\xf8\x3a\x29\x54\x8e\x9e\x2a\x84\xf4\xd2\xb8\xb8\x2e\xcd\x92\x6c\x99\x24\xc6\x0a\xf2\xff\x21\x26\x5f\x37\xeb\xf5\xad\xe4\xe5\xed\x30\xf1\x0c\xfa\xae\xad\x0e\xdd\xc8\xd1\x10\xbb\x2e\xaf\x28\x19\x69\xe3\xfe\x2e\x75\x2d\xc8\x80\xb1\x40\x46\x97\xa3\x87\xbb\xe9\x34\x34\xd9\xf2\x37\x00\x00\xff\xff\x1f\xe9\xb3\x2d\x9c\x01\x00\x00")
+
+func _000026_raw_message_by_typeUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__000026_raw_message_by_typeUpSql,
+		"000026_raw_message_by_type.up.sql",
+	)
+}
+
+func _000026_raw_message_by_typeUpSql() (*asset, error) {
+	bytes, err := _000026_raw_message_by_typeUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "000026_raw_message_by_type.up.sql", size: 412, mode: os.FileMode(0644), modTime: time.Unix(1733439000, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x27, 0x46, 0x2e, 0x92, 0x96, 0xc3, 0xe2, 0xea, 0x1a, 0xbd, 0x41, 0x5b, 0x3, 0x63, 0x31, 0xcd, 0x4b, 0xee, 0xe0, 0x17, 0xaf, 0xba, 0x91, 0xea, 0xcf, 0xd8, 0xc4, 0xee, 0xdf, 0x9b, 0xdd, 0x89}}
 	return a, nil
 }
 
@@ -729,6 +750,7 @@ var _bindata = map[string]func() (*asset, error){
 	"000023_dial_failure_types.up.sql":         _000023_dial_failure_typesUpSql,
 	"000024_waku_constraint.up.sql":            _000024_waku_constraintUpSql,
 	"000025_sent_message_total.up.sql":         _000025_sent_message_totalUpSql,
+	"000026_raw_message_by_type.up.sql":        _000026_raw_message_by_typeUpSql,
 	"doc.go":                                   docGo,
 }
 
@@ -803,6 +825,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"000023_dial_failure_types.up.sql":         {_000023_dial_failure_typesUpSql, map[string]*bintree{}},
 	"000024_waku_constraint.up.sql":            {_000024_waku_constraintUpSql, map[string]*bintree{}},
 	"000025_sent_message_total.up.sql":         {_000025_sent_message_totalUpSql, map[string]*bintree{}},
+	"000026_raw_message_by_type.up.sql":        {_000026_raw_message_by_typeUpSql, map[string]*bintree{}},
 	"doc.go":                                   {docGo, map[string]*bintree{}},
 }}
 
