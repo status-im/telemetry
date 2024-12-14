@@ -23,6 +23,7 @@ const (
 	MissedRelevantMessageMetric    TelemetryType = "MissedRelevantMessages"
 	MessageDeliveryConfirmedMetric TelemetryType = "MessageDeliveryConfirmed"
 	SentMessageTotalMetric         TelemetryType = "SentMessageTotal"
+	RawMessageByTypeMetric         TelemetryType = "RawMessageByType"
 )
 
 type Origin int64
@@ -205,4 +206,11 @@ type SentMessageTotal struct {
 	TelemetryRecord
 	Size      uint32 `json:"size"`
 	Timestamp int64  `json:"timestamp"`
+}
+
+type RawMessageByType struct {
+	TelemetryRecord
+	Size        uint32 `json:"size"`
+	MessageType string `json:"messageType"`
+	Timestamp   int64  `json:"timestamp"`
 }
