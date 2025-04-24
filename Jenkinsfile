@@ -40,7 +40,7 @@ pipeline {
       steps { script {
         withDockerRegistry([
           credentialsId: 'harbor-telemetry-robot',
-          url: 'https://${DOCKER_REGISTRY}',
+          url: "https://${DOCKER_REGISTRY}",
         ]) {
           image.push(env.IMAGE_TAG)
         }
