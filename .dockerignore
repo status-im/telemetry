@@ -2,3 +2,7 @@
 hooks/
 build/
 Dockerfile
+Makefile
+.github/
+LICENSE-*
+Jenkinsfile
