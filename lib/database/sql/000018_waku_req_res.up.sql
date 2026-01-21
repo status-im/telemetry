@@ -14,3 +14,15 @@ CREATE TABLE IF NOT EXISTS wakuRequestResponse (
 
 	CONSTRAINT messages_unique UNIQUE (peerId, messageHash)
 );
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'messages_unique'
+    ) THEN
+        ALTER TABLE wakuRequestResponse
+        DROP CONSTRAINT messages_unique;
+    END IF;
+END $$;
